@@ -27,23 +27,21 @@
     .header-title { font-size: 24px; font-weight: 800; letter-spacing: .1em; }
     .header-meta  { font-size: 12px; opacity: .65; margin-top: 4px; line-height: 1.6; }
     .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .status-badge {
+    .connected-badge {
       font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
-      display: flex; align-items: center; gap: 5px;
+      background: #d1fae5; color: #065f46; display: none;
     }
-    .status-ok   { background: #d1fae5; color: #065f46; }
-    .status-warn { background: #fef9c3; color: #713f12; }
 
     /* ── Buttons ── */
     .btn {
       padding: 9px 18px; border: none; border-radius: 8px;
       font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: all .18s; font-family: inherit; letter-spacing: .02em;
+      transition: all .18s; font-family: inherit;
     }
     .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-primary:hover { background: #1d4ed8; }
     .btn-ai      { background: #7c3aed; color: white; }
-    .btn-ai:hover { background: #6d28d9; transform: translateY(-1px); }
+    .btn-ai:hover { background: #6d28d9; }
     .btn-ghost   { background: rgba(255,255,255,.13); color: white; border: 1px solid rgba(255,255,255,.3); }
     .btn-ghost:hover { background: rgba(255,255,255,.22); }
     .btn-setting { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.2); font-size: 12px; padding: 7px 14px; }
@@ -51,8 +49,8 @@
     .btn-cancel  { background: #f1f5f9; color: var(--text); }
     .btn-cancel:hover { background: #e2e8f0; }
     .btn-danger  { background: #fee2e2; color: #b91c1c; }
-    .btn-danger:hover { background: #fecaca; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+    .btn-sm      { padding: 6px 14px; font-size: 12px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ── Stats ── */
     .stats-bar {
@@ -71,7 +69,6 @@
     .search-input {
       padding: 8px 12px 8px 34px; border: 1px solid var(--border); border-radius: 8px;
       font-size: 13px; font-family: inherit; width: 230px; background: white;
-      transition: border-color .2s, box-shadow .2s;
     }
     .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
     .filters { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -93,6 +90,7 @@
       background: white; border-radius: 12px; padding: 17px 19px 15px;
       box-shadow: var(--shadow); border-left: 4px solid #94a3b8;
       transition: box-shadow .2s, transform .2s;
+      cursor: pointer; user-select: none;
     }
     .session-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
     .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
@@ -103,26 +101,94 @@
     .card-foot { margin-top: 11px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .cat-tag    { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
     .sp-tag     { font-size: 10px; background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+    .memo-count-badge {
+      margin-left: auto; font-size: 11px; color: var(--muted);
+      background: var(--bg); padding: 2px 8px; border-radius: 10px; display: none;
+    }
+    .memo-count-badge.visible { display: inline-block; }
 
-    /* ── Modal Overlay ── */
+    /* ── Overlay / Modal base ── */
     .overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.45);
       display: flex; align-items: center; justify-content: center;
-      z-index: 100; padding: 20px; backdrop-filter: blur(2px);
+      z-index: 100; padding: 16px; backdrop-filter: blur(2px);
     }
     .overlay.hidden { display: none; }
     .modal {
       background: white; border-radius: 16px; padding: 28px; width: 100%;
-      max-width: 540px; max-height: 90vh; overflow-y: auto;
+      max-width: 540px; max-height: 92vh; overflow-y: auto;
       box-shadow: 0 24px 60px rgba(0,0,0,.2);
     }
-    .modal-title  { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+    .modal-title   { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    /* ── Detail Modal ── */
+    .detail-modal { max-width: 620px; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .detail-head {
+      background: var(--primary); color: white; padding: 22px 24px 18px; flex-shrink: 0;
+    }
+    .detail-head-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .detail-week  { font-size: 12px; opacity: .7; margin-bottom: 6px; }
+    .detail-theme { font-size: 20px; font-weight: 800; line-height: 1.35; margin-bottom: 10px; }
+    .detail-close {
+      background: rgba(255,255,255,.15); border: none; color: white; cursor: pointer;
+      width: 30px; height: 30px; border-radius: 50%; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s;
+    }
+    .detail-close:hover { background: rgba(255,255,255,.3); }
+    .detail-edit-btn {
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      color: white; cursor: pointer; padding: 5px 12px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; font-family: inherit; transition: background .2s; flex-shrink: 0;
+    }
+    .detail-edit-btn:hover { background: rgba(255,255,255,.28); }
+    .edit-section { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+    .edit-section .section-title { color: #92400e; border-bottom-color: #fde68a; }
+    .detail-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    .detail-points {
+      background: var(--bg); border-radius: 10px; padding: 13px 15px; margin-bottom: 20px;
+      font-size: 13px; color: var(--muted); line-height: 1.7;
+    }
+    .detail-points strong { color: var(--text); font-size: 11px; display: block; margin-bottom: 5px; letter-spacing: .05em; }
+
+    /* ── Sections ── */
+    .section-title {
+      font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 2px solid var(--border);
+    }
+    .detail-section { margin-bottom: 24px; }
+
+    /* ── Memos ── */
+    .memos-list { margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .memo-card  { background: #f8fafc; border-radius: 10px; padding: 12px 14px; border-left: 3px solid var(--accent); }
+    .memo-meta  { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    .memo-text  { font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+    .no-memos   { font-size: 13px; color: #94a3b8; text-align: center; padding: 16px 0; }
+    .memo-form  { display: flex; flex-direction: column; gap: 8px; }
+    .memo-row   { display: flex; gap: 8px; }
+    .memo-name  { flex: 0 0 110px; }
+
+    /* ── Attachments ── */
+    .attach-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .attach-item { display: flex; align-items: center; gap: 10px; background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
+    .attach-icon { font-size: 20px; flex-shrink: 0; }
+    .attach-name { font-size: 13px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .attach-dl   { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 700; white-space: nowrap; }
+    .attach-dl:hover { text-decoration: underline; }
+    .no-attach   { font-size: 13px; color: #94a3b8; text-align: center; padding: 10px 0; }
+    .upload-label {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 16px; background: var(--bg); border: 1.5px dashed var(--border);
+      border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted);
+      transition: all .18s;
+    }
+    .upload-label:hover { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+    .upload-prog { font-size: 12px; color: var(--accent); margin-top: 6px; display: none; }
 
     /* ── Form ── */
     .form-row   { margin-bottom: 13px; }
     .form-2col  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; letter-spacing: .03em; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
     .form-input, .form-textarea, .form-select {
       width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
       font-size: 13px; font-family: inherit; background: white; color: var(--text);
@@ -134,66 +200,39 @@
     }
     .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
     .form-hint a { color: var(--accent); }
-    .form-section-title { font-size: 13px; font-weight: 700; color: var(--text); margin: 18px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .form-section-title { font-size: 13px; font-weight: 700; margin: 18px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 
-    /* ── Setup Modal ── */
-    .setup-step {
-      display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
-      background: #f8fafc; border-radius: 10px; margin-bottom: 10px;
-    }
-    .step-num {
-      width: 26px; height: 26px; background: var(--accent); color: white;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 800; flex-shrink: 0;
-    }
+    /* ── Setup Steps ── */
+    .setup-step { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: #f8fafc; border-radius: 10px; margin-bottom: 10px; }
+    .step-num   { width: 26px; height: 26px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
     .step-body p   { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
     .step-body span { font-size: 12px; color: var(--muted); line-height: 1.6; }
 
     /* ── AI Modal ── */
-    .ai-note {
-      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
-      padding: 11px 14px; font-size: 12px; color: #166534; line-height: 1.7; margin-bottom: 14px;
-    }
-    .prompt-box {
-      background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
-      padding: 13px 15px; font-size: 12px; line-height: 1.85;
-      max-height: 360px; overflow-y: auto; white-space: pre-wrap;
-      font-family: 'Hiragino Sans','Yu Gothic UI',sans-serif; color: #334155;
-    }
+    .ai-note { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 11px 14px; font-size: 12px; color: #166534; line-height: 1.7; margin-bottom: 14px; }
+    .prompt-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; font-size: 12px; line-height: 1.85; max-height: 360px; overflow-y: auto; white-space: pre-wrap; font-family: inherit; color: #334155; }
 
-    /* ── Loading ── */
-    .loading {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; padding: 48px; color: var(--muted); font-size: 14px;
-    }
-    .spin {
-      width: 22px; height: 22px; border: 3px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
+    /* ── Loading / Empty ── */
+    .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 48px; color: var(--muted); font-size: 14px; }
+    .spin { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed; bottom: 26px; right: 26px;
-      background: #1e293b; color: white; padding: 12px 20px;
-      border-radius: 10px; font-size: 13px; font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,.22);
-      transition: opacity .3s, transform .3s; z-index: 300;
-    }
-    .toast.ok   { background: #15803d; }
-    .toast.err  { background: #b91c1c; }
-    .toast.hidden { opacity: 0; transform: translateY(10px); pointer-events: none; }
-
-    /* ── Empty ── */
     .empty { grid-column: 1/-1; text-align: center; padding: 52px 20px; color: var(--muted); }
     .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 26px; right: 26px; color: white; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.22); transition: opacity .3s, transform .3s; z-index: 300; background: #1e293b; }
+    .toast.ok  { background: #15803d; }
+    .toast.err { background: #b91c1c; }
+    .toast.hidden { opacity: 0; transform: translateY(10px); pointer-events: none; }
 
     @media (max-width: 640px) {
       header, .stats-bar, .controls, .sessions-wrap, .result-count { padding-left: 16px; padding-right: 16px; }
       .sessions-grid { grid-template-columns: 1fr; }
       .form-2col { grid-template-columns: 1fr; }
-      .search-input { width: 100%; }
+      .search-input { width: 180px; }
+      .detail-theme { font-size: 17px; }
+      .memo-row { flex-direction: column; }
+      .memo-name { flex: none; width: 100%; }
     }
   </style>
 </head>
@@ -209,10 +248,10 @@
     </div>
   </div>
   <div class="header-right">
-    <span class="status-badge status-warn hidden" id="statusBadge">⚠ 未接続</span>
+    <span class="connected-badge" id="connectedBadge">● GitHub 接続中</span>
     <button class="btn btn-ai"      onclick="openAI()">🤖 次回テーマをAIに提案</button>
     <button class="btn btn-ghost"   onclick="openAdd()">＋ 新規追加</button>
-    <button class="btn btn-setting" onclick="openSetup()">⚙ GitHub設定</button>
+    <button class="btn btn-setting" onclick="openSetup()">⚙ 設定</button>
   </div>
 </header>
 
@@ -237,10 +276,99 @@
 </div>
 <div class="result-count" id="resultCount"></div>
 
-<!-- ══ Sessions Grid ══ -->
+<!-- ══ Grid ══ -->
 <div class="sessions-wrap">
   <div class="sessions-grid" id="sessionsGrid">
     <div class="loading" style="grid-column:1/-1"><div class="spin"></div>読み込み中...</div>
+  </div>
+</div>
+
+<!-- ══ Detail Modal ══ -->
+<div class="overlay hidden" id="detailModal">
+  <div class="modal detail-modal">
+    <div class="detail-head">
+      <div class="detail-head-top">
+        <div style="flex:1;min-width:0">
+          <div class="detail-week"  id="dWeek"></div>
+          <div class="detail-theme" id="dTheme"></div>
+          <span id="dCatTag" class="cat-tag"></span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <button class="detail-edit-btn" id="editToggleBtn" onclick="toggleEdit()" style="display:none">✏ 編集</button>
+          <button class="detail-close" onclick="closeModal('detailModal')">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-body">
+
+      <div class="detail-points" id="dPoints"></div>
+
+      <!-- Edit Form (admin only) -->
+      <div class="edit-section" id="editForm" style="display:none">
+        <div class="section-title">✏ セッションを編集（管理者）</div>
+        <div class="form-2col">
+          <div class="form-row">
+            <label class="form-label">開催日</label>
+            <input type="date" class="form-input" id="editDate">
+          </div>
+          <div class="form-row">
+            <label class="form-label">カテゴリ</label>
+            <select class="form-select" id="editCat">
+              <option value="AI・デジタル">AI・デジタル</option>
+              <option value="リーダーシップ・組織">リーダーシップ・組織</option>
+              <option value="マーケティング・消費">マーケティング・消費</option>
+              <option value="スピーチ・表現">スピーチ・表現</option>
+              <option value="社会・思想">社会・思想</option>
+              <option value="読書・クリエイティブ">読書・クリエイティブ</option>
+              <option value="思考・フレームワーク">思考・フレームワーク</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">テーマ</label>
+          <input type="text" class="form-input" id="editTheme">
+        </div>
+        <div class="form-row">
+          <label class="form-label">話し合うポイント</label>
+          <textarea class="form-textarea" id="editPoints"></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">備考</label>
+          <input type="text" class="form-input" id="editNote" placeholder="例：次世代リーダーMTG">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-cancel btn-sm" onclick="cancelEdit()">キャンセル</button>
+          <button class="btn btn-primary btn-sm" id="editSaveBtn" onclick="saveEdit()">保存する</button>
+        </div>
+      </div>
+
+      <!-- Memos -->
+      <div class="detail-section">
+        <div class="section-title">💬 メモ・感想</div>
+        <div class="memos-list" id="memosList"></div>
+        <div class="memo-form">
+          <div class="memo-row">
+            <input type="text" class="form-input memo-name" id="memoAuthor" placeholder="お名前">
+            <textarea class="form-textarea" id="memoText" style="flex:1;min-height:68px" placeholder="感想やメモを自由に書いてください..."></textarea>
+          </div>
+          <div style="text-align:right">
+            <button class="btn btn-primary btn-sm" id="memoPostBtn" onclick="submitMemo()">投稿する</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attachments -->
+      <div class="detail-section">
+        <div class="section-title">📎 資料・添付ファイル</div>
+        <div class="attach-list" id="attachList"></div>
+        <label class="upload-label">
+          <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
+          📎 資料を添付する
+        </label>
+        <div class="upload-prog" id="uploadProg"></div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -248,45 +376,29 @@
 <div class="overlay hidden" id="setupModal">
   <div class="modal" style="max-width:580px">
     <div class="modal-title">⚙ GitHub 接続設定</div>
-
     <div class="setup-step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p>GitHubでリポジトリを作成</p>
-        <span>
-          <a href="https://github.com/new" target="_blank">github.com/new</a> にアクセスして新しいリポジトリを作成します。<br>
-          名前の例: <strong>manzai-juku</strong>　／　Public（公開）で作成してください。
-        </span>
+        <p>GitHubでリポジトリを作成（初回のみ）</p>
+        <span><a href="https://github.com/new" target="_blank">github.com/new</a> にアクセス → 名前: <strong>manzai-juku</strong> → <strong>Public</strong>で作成</span>
       </div>
     </div>
-
     <div class="setup-step">
       <div class="step-num">2</div>
       <div class="step-body">
         <p>Personal Access Token を発行</p>
-        <span>
-          <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> を開き、<br>
-          ・Token name: 萬財塾<br>
-          ・Expiration: 1 year<br>
-          ・スコープ: <strong>public_repo</strong> にチェック<br>
-          → 「Generate token」ボタンを押してトークンをコピー
-        </span>
+        <span><a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+        Token name: 萬財塾 ／ Expiration: 1 year ／ スコープ: <strong>public_repo</strong> → Generate token</span>
       </div>
     </div>
-
     <div class="setup-step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p>GitHub Pages を有効化（ホスティング）</p>
-        <span>
-          リポジトリの Settings → Pages → Source を「Deploy from a branch」→ branch: main に設定。<br>
-          URLが発行されたら、このHTMLファイルをそのリポジトリにアップロードしてください。
-        </span>
+        <p>メンバーへの共有</p>
+        <span>ユーザー名・リポジトリ名・トークンの3点をメンバーに共有。各自のブラウザでこの設定画面に入力するとメモ・添付が使えます。</span>
       </div>
     </div>
-
-    <div class="form-section-title">接続情報を入力</div>
-
+    <div class="form-section-title">接続情報</div>
     <div class="form-2col">
       <div class="form-row">
         <label class="form-label">GitHubユーザー名 *</label>
@@ -300,7 +412,16 @@
     <div class="form-row">
       <label class="form-label">Personal Access Token *</label>
       <input type="password" class="form-input" id="cfgToken" placeholder="ghp_xxxxxxxxxxxx">
-      <div class="form-hint">トークンはこのブラウザにのみ保存され、外部には送信されません（GitHub APIとの通信のみ使用）。</div>
+      <div class="form-hint">トークンはこのブラウザのみに保存。GitHub APIとの通信にのみ使用されます。</div>
+    </div>
+    <div class="form-section-title">管理者設定（編集機能）</div>
+    <div class="form-row">
+      <label class="form-label">管理者パスワード</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" class="form-input" id="adminPwdInput" placeholder="パスワードを入力（4文字以上）">
+        <button class="btn btn-primary btn-sm" onclick="setAdminPwd()" style="white-space:nowrap">設定</button>
+      </div>
+      <div class="form-hint" id="adminPwdStatus"></div>
     </div>
 
     <div class="modal-actions">
@@ -331,7 +452,7 @@
     </div>
     <div class="form-row">
       <label class="form-label">話し合うポイント</label>
-      <textarea class="form-textarea" id="newPoints" placeholder="例：・AIの判断は誰が責任を持つ？&#10;・社内での活用ルールは？"></textarea>
+      <textarea class="form-textarea" id="newPoints"></textarea>
     </div>
     <div class="form-row">
       <label class="form-label">カテゴリ *</label>
@@ -347,7 +468,7 @@
     </div>
     <div class="form-row">
       <label class="form-label">備考（任意）</label>
-      <textarea class="form-textarea" id="newNote" style="min-height:50px" placeholder="例：次世代リーダーMTGとの合同開催"></textarea>
+      <textarea class="form-textarea" id="newNote" style="min-height:50px"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal('addModal')">キャンセル</button>
@@ -360,9 +481,7 @@
 <div class="overlay hidden" id="aiModal">
   <div class="modal">
     <div class="modal-title">🤖 AIへのプロンプトを生成しました</div>
-    <div class="ai-note">
-      ✅ 「📋 コピー」ボタンを押して、<strong>Claude のチャット画面に貼り付ける</strong>だけで次回テーマの提案が届きます。APIキー不要・追加費用ゼロです。
-    </div>
+    <div class="ai-note">✅ 「📋 コピー」を押して <strong>Claude のチャット画面に貼り付ける</strong>だけで次回テーマの提案が届きます。</div>
     <div class="prompt-box" id="aiPromptBox"></div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal('aiModal')">閉じる</button>
@@ -375,9 +494,9 @@
 <div class="toast hidden" id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════
-   BASE DATA（過去35回）
-═══════════════════════════════════════ */
+/* ═══════════════════════════
+   BASE DATA（35回分）
+═══════════════════════════ */
 const BASE = [
   { week:  1, date:"2024/5/9",   theme:"クリエイティブディレクター",          points:"参加者の意識度の確認",                                                                             cat:"読書・クリエイティブ", note:"", sp:false },
   { week:  2, date:"2024/5/23",  theme:"マウンティング",                       points:"思い当たることはある？",                                                                           cat:"社会・思想",           note:"", sp:false },
@@ -426,96 +545,108 @@ const CAT = {
   "思考・フレームワーク": { bg:"#fef9c3", color:"#713f12", border:"#eab308" },
 };
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════
    GITHUB API
-═══════════════════════════════════════ */
+═══════════════════════════ */
 const GH = 'https://api.github.com';
 const CFG_KEY = 'mzjuku_cfg';
 
 function getCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||'{}'); }catch(e){ return {}; } }
 function setCfg(c){ localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+function ghH(t){ return { Authorization:`token ${t}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }; }
 
-function ghHeaders(token){
-  return {
-    Authorization: `token ${token}`,
-    Accept: 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json',
-  };
-}
-
-async function ghGetFile(owner, repo, path, token){
-  const r = await fetch(`${GH}/repos/${owner}/${repo}/contents/${path}`, { headers: ghHeaders(token) });
-  if(r.status === 404) return null;
-  if(!r.ok) throw new Error(`GitHub API エラー: ${r.status}`);
+async function ghGet(owner, repo, path, token){
+  const r = await fetch(`${GH}/repos/${owner}/${repo}/contents/${path}`, { headers: ghH(token) });
+  if(r.status===404) return null;
+  if(!r.ok) throw new Error(`GitHub APIエラー: ${r.status}`);
   return r.json();
 }
 
-async function ghPutFile(owner, repo, path, content, sha, message, token){
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+async function ghPut(owner, repo, path, content, sha, message, token, isRawB64){
+  const encoded = isRawB64 ? content : btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
   const body = { message, content: encoded };
   if(sha) body.sha = sha;
   const r = await fetch(`${GH}/repos/${owner}/${repo}/contents/${path}`, {
-    method: 'PUT', headers: ghHeaders(token), body: JSON.stringify(body)
+    method:'PUT', headers: ghH(token), body: JSON.stringify(body)
   });
-  if(!r.ok){
-    const e = await r.json().catch(()=>({}));
-    throw new Error(e.message || `GitHub書き込みエラー: ${r.status}`);
-  }
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||`書き込みエラー: ${r.status}`); }
   return r.json();
 }
 
-async function loadExtra(){
-  const cfg = getCfg();
-  if(!cfg.owner || !cfg.repo || !cfg.token) return [];
-  const file = await ghGetFile(cfg.owner, cfg.repo, 'sessions.json', cfg.token);
-  if(!file) return [];
-  const json = decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))));
-  return JSON.parse(json);
-}
+function b64json(str){ return JSON.parse(decodeURIComponent(escape(atob(str.replace(/\n/g,''))))); }
 
-async function saveExtra(sessions){
-  const cfg = getCfg();
-  if(!cfg.owner || !cfg.repo || !cfg.token) throw new Error('GitHub が未設定です');
-  const file = await ghGetFile(cfg.owner, cfg.repo, 'sessions.json', cfg.token);
-  const sha = file ? file.sha : null;
-  await ghPutFile(cfg.owner, cfg.repo, 'sessions.json', sessions, sha, '萬財塾 セッション更新', cfg.token);
-}
-
-/* ═══════════════════════════════════════
-   APP STATE
-═══════════════════════════════════════ */
-let extra = [];
-let ALL   = [...BASE];
+/* ═══════════════════════════
+   STATE
+═══════════════════════════ */
+let extra       = [];
+let sessionData = {};  // { "week_N": { memos:[], attachments:[] } }
+let ALL         = [...BASE];
 let currentFilter = 'all';
+let currentWeek   = null;
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════
+   LOAD / SAVE
+═══════════════════════════ */
+async function loadAll(){
+  const cfg = getCfg();
+  if(!cfg.owner||!cfg.repo||!cfg.token) return;
+  const [sFile, dFile] = await Promise.all([
+    ghGet(cfg.owner, cfg.repo, 'sessions.json',     cfg.token).catch(()=>null),
+    ghGet(cfg.owner, cfg.repo, 'session_data.json', cfg.token).catch(()=>null),
+  ]);
+  if(sFile){ try{ extra       = b64json(sFile.content); }catch(e){} }
+  if(dFile){ try{ sessionData = b64json(dFile.content); }catch(e){} }
+  // overridesをBASEに適用
+  const ov = sessionData.overrides||{};
+  ALL = [...BASE.map(s=>{ const o=ov[`week_${s.week}`]; return o?{...s,...o}:s; }), ...extra];
+}
+
+async function saveSessionData(){
+  const cfg = getCfg();
+  if(!cfg.owner||!cfg.repo||!cfg.token) throw new Error('GitHub未設定です。⚙ 設定から接続してください');
+  const f   = await ghGet(cfg.owner, cfg.repo, 'session_data.json', cfg.token);
+  await ghPut(cfg.owner, cfg.repo, 'session_data.json', sessionData, f?f.sha:null, '萬財塾 メモ更新', cfg.token);
+}
+
+async function saveSessions(){
+  const cfg = getCfg();
+  if(!cfg.owner||!cfg.repo||!cfg.token) throw new Error('GitHub未設定');
+  const f   = await ghGet(cfg.owner, cfg.repo, 'sessions.json', cfg.token);
+  await ghPut(cfg.owner, cfg.repo, 'sessions.json', extra, f?f.sha:null, '萬財塾 セッション更新', cfg.token);
+}
+
+/* ═══════════════════════════
    RENDER
-═══════════════════════════════════════ */
+═══════════════════════════ */
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function memoCount(week){
+  const d = sessionData[`week_${week}`];
+  return d ? (d.memos||[]).length : 0;
+}
 
 function renderStats(){
   const total = ALL.length;
-  const counts = {};
-  Object.keys(CAT).forEach(c=>counts[c]=0);
-  ALL.forEach(s=>{ if(counts[s.cat]!==undefined) counts[s.cat]++; });
-  let html = `<div class="stat-item"><div class="stat-number">${total}</div><div class="stat-label">総セッション数</div></div><div class="stat-div"></div>`;
-  Object.entries(counts).forEach(([cat,n])=>{
+  const cc = {};
+  Object.keys(CAT).forEach(c=>cc[c]=0);
+  ALL.forEach(s=>{ if(cc[s.cat]!==undefined) cc[s.cat]++; });
+  let h = `<div class="stat-item"><div class="stat-number">${total}</div><div class="stat-label">総セッション数</div></div><div class="stat-div"></div>`;
+  Object.entries(cc).forEach(([cat,n])=>{
     if(!n) return;
-    html += `<div class="stat-item"><div class="stat-number" style="font-size:18px;color:${CAT[cat].color}">${n}</div><div class="stat-label">${cat}</div></div>`;
+    h += `<div class="stat-item"><div class="stat-number" style="font-size:18px;color:${CAT[cat].color}">${n}</div><div class="stat-label">${cat}</div></div>`;
   });
-  document.getElementById('statsBar').innerHTML = html;
+  document.getElementById('statsBar').innerHTML = h;
 }
 
 function render(){
   const q = document.getElementById('searchInput').value.toLowerCase();
   const list = ALL.filter(s=>{
-    const mc = currentFilter==='all' || s.cat===currentFilter;
-    const mq = !q || s.theme.toLowerCase().includes(q) || s.points.toLowerCase().includes(q);
-    return mc && mq;
+    const mc = currentFilter==='all'||s.cat===currentFilter;
+    const mq = !q||s.theme.toLowerCase().includes(q)||s.points.toLowerCase().includes(q);
+    return mc&&mq;
   }).sort((a,b)=>b.week-a.week);
 
   document.getElementById('resultCount').textContent = `${list.length} 件を表示中`;
-
   const g = document.getElementById('sessionsGrid');
   if(!list.length){
     g.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div>該当するセッションが見つかりませんでした</div>`;
@@ -523,265 +654,393 @@ function render(){
   }
   g.innerHTML = list.map(s=>{
     const st = CAT[s.cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
-    return `
-<div class="session-card" style="border-left-color:${st.border}">
-  <div class="card-top">
-    <span class="week-badge">第 ${s.week} 回</span>
-    <span class="date-text">${esc(s.date)}</span>
-  </div>
+    const mc = memoCount(s.week);
+    return `<div class="session-card" style="border-left-color:${st.border}" onclick="openDetail(${s.week})">
+  <div class="card-top"><span class="week-badge">第 ${s.week} 回</span><span class="date-text">${esc(s.date)}</span></div>
   <div class="theme-title">${esc(s.theme)}</div>
-  <div class="points-text">${esc(s.points)}</div>
   <div class="card-foot">
     <span class="cat-tag" style="background:${st.bg};color:${st.color}">${esc(s.cat)}</span>
     ${s.sp?'<span class="sp-tag">🔹 次世代リーダーMTG</span>':''}
-    ${s.note&&!s.sp?`<span style="font-size:10px;color:#94a3b8">${esc(s.note)}</span>`:''}
+    <span class="memo-count-badge ${mc?'visible':''}">${mc?'💬 '+mc+' 件':''}</span>
   </div>
 </div>`;
   }).join('');
 }
 
 function setFilter(cat,btn){
-  currentFilter = cat;
+  currentFilter=cat;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
+  btn.classList.add('active'); render();
 }
 
-/* ═══════════════════════════════════════
+/* ═══════════════════════════
    MODALS
-═══════════════════════════════════════ */
+═══════════════════════════ */
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-
-['setupModal','addModal','aiModal'].forEach(id=>{
+['setupModal','addModal','aiModal','detailModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) closeModal(id); });
 });
 
-/* ─── Setup ─── */
-function openSetup(){
+/* ── Detail ── */
+function openDetail(week){
+  currentWeek = week;
+  const s = ALL.find(x=>x.week===week); if(!s) return;
+  const st = CAT[s.cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
+
+  document.getElementById('dWeek').textContent  = `第 ${s.week} 回　${s.date}`;
+  document.getElementById('dTheme').textContent = s.theme;
+  const tag = document.getElementById('dCatTag');
+  tag.textContent=s.cat; tag.style.background=st.bg; tag.style.color=st.color;
+
+  const pts = document.getElementById('dPoints');
+  if(s.points){ pts.innerHTML=`<strong>話し合うポイント</strong>${esc(s.points)}`; pts.style.display='block'; }
+  else { pts.style.display='none'; }
+
+  document.getElementById('memoAuthor').value = localStorage.getItem('mzjuku_name')||'';
+  document.getElementById('memoText').value   = '';
+  document.getElementById('uploadProg').style.display = 'none';
+  document.getElementById('editForm').style.display   = 'none';
+  document.getElementById('editToggleBtn').textContent = '✏ 編集';
+  // 管理者のみ編集ボタンを表示
+  document.getElementById('editToggleBtn').style.display = isAdmin() ? 'inline-flex' : 'none';
+
+  renderMemos(week);
+  renderAttachments(week);
+  openModal('detailModal');
+}
+
+function renderMemos(week){
+  const d = sessionData[`week_${week}`];
+  const memos = d?(d.memos||[]):[];
+  const el = document.getElementById('memosList');
+  if(!memos.length){ el.innerHTML='<div class="no-memos">まだメモがありません。最初の感想を書いてみましょう！</div>'; return; }
+  el.innerHTML = memos.map(m=>`
+<div class="memo-card">
+  <div class="memo-meta">✏️ ${esc(m.author)}&ensp;<span style="font-weight:400;color:#94a3b8">${esc(m.time)}</span></div>
+  <div class="memo-text">${esc(m.text)}</div>
+</div>`).join('');
+  // scroll to bottom to show latest
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderAttachments(week){
+  const d = sessionData[`week_${week}`];
+  const atts = d?(d.attachments||[]):[];
+  const el = document.getElementById('attachList');
+  if(!atts.length){ el.innerHTML='<div class="no-attach">添付ファイルはありません</div>'; return; }
+  const icon = n=>{ const e=n.split('.').pop().toLowerCase(); return {pdf:'📄',png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🖼',xlsx:'📊',xls:'📊',pptx:'📊',doc:'📝',docx:'📝'}[e]||'📎'; };
+  el.innerHTML = atts.map(a=>`
+<div class="attach-item">
+  <span class="attach-icon">${icon(a.name)}</span>
+  <span class="attach-name">${esc(a.name)}</span>
+  <a class="attach-dl" href="${esc(a.url)}" target="_blank">ダウンロード</a>
+</div>`).join('');
+}
+
+/* ── Memo submit ── */
+async function submitMemo(){
+  const author = document.getElementById('memoAuthor').value.trim();
+  const text   = document.getElementById('memoText').value.trim();
+  if(!author){ toast('お名前を入力してください','err'); return; }
+  if(!text)  { toast('メモを入力してください','err'); return; }
+
+  localStorage.setItem('mzjuku_name', author);
+  const btn = document.getElementById('memoPostBtn');
+  btn.disabled=true; btn.textContent='投稿中...';
+
+  const key = `week_${currentWeek}`;
+  if(!sessionData[key]) sessionData[key]={ memos:[], attachments:[] };
+  const now = new Date();
+  const ts  = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  sessionData[key].memos.push({ author, text, time:ts });
+
+  try {
+    await saveSessionData();
+    document.getElementById('memoText').value='';
+    renderMemos(currentWeek);
+    render();
+    toast('✅ メモを投稿しました','ok');
+  } catch(e) {
+    sessionData[key].memos.pop();
+    toast(`❌ ${e.message}`,'err');
+  } finally { btn.disabled=false; btn.textContent='投稿する'; }
+}
+
+/* ── File upload ── */
+async function handleUpload(event){
+  const file = event.target.files[0]; if(!file) return;
+  if(file.size > 24*1024*1024){ toast('❌ 24MB以内のファイルにしてください','err'); return; }
+
   const cfg = getCfg();
-  document.getElementById('cfgOwner').value = cfg.owner||'';
-  document.getElementById('cfgRepo').value  = cfg.repo||'';
-  document.getElementById('cfgToken').value = cfg.token||'';
+  if(!cfg.owner||!cfg.repo||!cfg.token){ toast('❌ GitHubが未設定です。⚙ 設定から接続してください','err'); return; }
+
+  const prog = document.getElementById('uploadProg');
+  prog.style.display='block'; prog.textContent=`「${file.name}」をアップロード中...`;
+
+  try {
+    const b64 = await new Promise((res,rej)=>{
+      const r=new FileReader(); r.onload=e=>res(e.target.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file);
+    });
+
+    const path = `attachments/week_${currentWeek}/${file.name}`;
+    const existing = await ghGet(cfg.owner, cfg.repo, path, cfg.token);
+    await ghPut(cfg.owner, cfg.repo, path, b64, existing?existing.sha:null, `添付: ${file.name}`, cfg.token, true);
+
+    const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${path}`;
+    const key = `week_${currentWeek}`;
+    if(!sessionData[key]) sessionData[key]={ memos:[], attachments:[] };
+    sessionData[key].attachments = (sessionData[key].attachments||[]).filter(a=>a.name!==file.name);
+    sessionData[key].attachments.push({ name:file.name, url:rawUrl });
+
+    await saveSessionData();
+    renderAttachments(currentWeek);
+    toast(`✅「${file.name}」を添付しました`,'ok');
+  } catch(e) {
+    toast(`❌ アップロード失敗: ${e.message}`,'err');
+  } finally { prog.style.display='none'; event.target.value=''; }
+}
+
+/* ── Setup ── */
+function openSetup(){
+  const cfg=getCfg();
+  document.getElementById('cfgOwner').value=cfg.owner||'';
+  document.getElementById('cfgRepo').value =cfg.repo||'';
+  document.getElementById('cfgToken').value=cfg.token||'';
+  document.getElementById('adminPwdInput').value='';
+  const hasPwd = !!localStorage.getItem('mzjuku_admin');
+  document.getElementById('adminPwdStatus').textContent = hasPwd ? '✅ 管理者パスワードが設定されています。編集機能が有効です。' : '未設定。設定すると萬財塾のみ編集ボタンが使えます。';
+  document.getElementById('adminPwdStatus').style.color = hasPwd ? '#065f46' : '';
   openModal('setupModal');
 }
 
 async function saveSetup(){
-  const owner = document.getElementById('cfgOwner').value.trim();
-  const repo  = document.getElementById('cfgRepo').value.trim();
-  const token = document.getElementById('cfgToken').value.trim();
+  const owner=document.getElementById('cfgOwner').value.trim();
+  const repo =document.getElementById('cfgRepo').value.trim();
+  const token=document.getElementById('cfgToken').value.trim();
   if(!owner||!repo||!token){ toast('すべての項目を入力してください','err'); return; }
-  const btn = document.getElementById('setupSaveBtn');
-  btn.disabled = true; btn.textContent = '接続確認中...';
+  const btn=document.getElementById('setupSaveBtn');
+  btn.disabled=true; btn.textContent='確認中...';
   try {
-    // verify token works
-    const r = await fetch(`${GH}/repos/${owner}/${repo}`, { headers: ghHeaders(token) });
+    const r=await fetch(`${GH}/repos/${owner}/${repo}`,{headers:ghH(token)});
     if(r.status===404) throw new Error('リポジトリが見つかりません');
     if(r.status===401) throw new Error('トークンが無効です');
     if(!r.ok) throw new Error(`エラー: ${r.status}`);
-    setCfg({ owner, repo, token });
+    setCfg({owner,repo,token});
     closeModal('setupModal');
-    updateStatus(true);
+    document.getElementById('connectedBadge').style.display='inline-flex';
     toast('✅ GitHubに接続しました','ok');
     await reload();
-  } catch(e) {
-    toast(`❌ ${e.message}`,'err');
-  } finally {
-    btn.disabled = false; btn.textContent = '接続して保存';
-  }
+  } catch(e){ toast(`❌ ${e.message}`,'err'); }
+  finally { btn.disabled=false; btn.textContent='接続して保存'; }
 }
 
 function clearConfig(){
   if(!confirm('GitHub接続設定を削除しますか？')) return;
   localStorage.removeItem(CFG_KEY);
-  extra = []; ALL = [...BASE];
-  updateStatus(false);
-  renderStats(); render();
-  closeModal('setupModal');
+  extra=[]; sessionData={}; ALL=[...BASE];
+  document.getElementById('connectedBadge').style.display='none';
+  renderStats(); render(); closeModal('setupModal');
   toast('設定を削除しました');
 }
 
-function updateStatus(connected){
-  const el = document.getElementById('statusBadge');
-  if(connected){
-    el.className = 'status-badge status-ok';
-    el.textContent = '● GitHub 接続中';
-    el.classList.remove('hidden');
-  } else {
-    const cfg = getCfg();
-    if(!cfg.owner){
-      el.className = 'status-badge status-warn';
-      el.textContent = '⚠ GitHub 未設定';
-      el.classList.remove('hidden');
-    }
-  }
-}
-
-/* ─── Add Session ─── */
+/* ── Add Session ── */
 function openAdd(){
-  const nextW = Math.max(...ALL.map(s=>s.week)) + 1;
-  document.getElementById('newWeek').value = nextW;
-  document.getElementById('newDate').value = nextThursday();
+  const nw=Math.max(...ALL.map(s=>s.week))+1;
+  document.getElementById('newWeek').value=nw;
+  document.getElementById('newDate').value=nextThursday();
   ['newTheme','newPoints','newNote'].forEach(id=>document.getElementById(id).value='');
   openModal('addModal');
 }
 
 function nextThursday(){
-  const d = new Date(); const diff=(4-d.getDay()+7)%7||14;
+  const d=new Date(); const diff=(4-d.getDay()+7)%7||14;
   d.setDate(d.getDate()+diff); return d.toISOString().split('T')[0];
 }
 
 async function addSession(){
-  const week  = parseInt(document.getElementById('newWeek').value);
-  const raw   = document.getElementById('newDate').value;
-  const theme = document.getElementById('newTheme').value.trim();
-  const pts   = document.getElementById('newPoints').value.trim();
-  const cat   = document.getElementById('newCat').value;
-  const note  = document.getElementById('newNote').value.trim();
+  const week =parseInt(document.getElementById('newWeek').value);
+  const raw  =document.getElementById('newDate').value;
+  const theme=document.getElementById('newTheme').value.trim();
+  const pts  =document.getElementById('newPoints').value.trim();
+  const cat  =document.getElementById('newCat').value;
+  const note =document.getElementById('newNote').value.trim();
   if(!week||!raw||!theme){ toast('回数・開催日・テーマは必須です','err'); return; }
-
-  const d = new Date(raw);
-  const date = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-  const item = { week, date, theme, points:pts, cat, note, sp:note.includes('次世代') };
-
-  const btn = document.getElementById('addBtn');
-  btn.disabled = true; btn.textContent = '保存中...';
+  const d=new Date(raw);
+  const date=`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+  const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代')};
+  const btn=document.getElementById('addBtn');
+  btn.disabled=true; btn.textContent='保存中...';
   try {
-    const cfg = getCfg();
-    if(cfg.owner && cfg.token){
-      extra.push(item);
-      await saveExtra(extra);
-    } else {
-      // fallback: localStorage only
-      extra.push(item);
-      localStorage.setItem('mzjuku_local', JSON.stringify(extra));
-    }
-    ALL = [...BASE, ...extra];
-    closeModal('addModal');
-    renderStats(); render();
+    extra.push(item); await saveSessions();
+    ALL=[...BASE,...extra];
+    closeModal('addModal'); renderStats(); render();
     toast(`✅ 第${week}回「${theme}」を追加しました`,'ok');
-  } catch(e) {
-    extra = extra.filter(s=>s.week!==item.week);
-    toast(`❌ 保存失敗: ${e.message}`,'err');
-  } finally {
-    btn.disabled = false; btn.textContent = '追加する';
-  }
+  } catch(e){ extra.pop(); toast(`❌ ${e.message}`,'err'); }
+  finally { btn.disabled=false; btn.textContent='追加する'; }
 }
 
-/* ─── AI Prompt ─── */
-function openAI(){
-  document.getElementById('aiPromptBox').textContent = buildPrompt();
-  openModal('aiModal');
-}
+/* ── AI Prompt ── */
+function openAI(){ document.getElementById('aiPromptBox').textContent=buildPrompt(); openModal('aiModal'); }
 
 function buildPrompt(){
-  const sorted = [...ALL].sort((a,b)=>a.week-b.week);
-  const total  = sorted.length;
-  const next   = total + 1;
-  const cc = {};
-  sorted.forEach(s=>cc[s.cat]=(cc[s.cat]||0)+1);
-  const catSummary = Object.entries(cc).map(([k,v])=>`${k}：${v}回`).join('、');
-  const recent     = sorted.slice(-6).map(s=>`第${s.week}回（${s.date}）「${s.theme}」【${s.cat}】`).join('\n');
-  const fullList   = sorted.map(s=>`第${s.week}回 ${s.date} ／ 【${s.cat}】${s.theme}`).join('\n');
-
+  const s=[...ALL].sort((a,b)=>a.week-b.week);
+  const total=s.length, next=total+1;
+  const cc={}; s.forEach(x=>cc[x.cat]=(cc[x.cat]||0)+1);
+  const catS=Object.entries(cc).map(([k,v])=>`${k}：${v}回`).join('、');
+  const rec =s.slice(-6).map(x=>`第${x.week}回（${x.date}）「${x.theme}」【${x.cat}】`).join('\n');
+  const full=s.map(x=>`第${x.week}回 ${x.date} ／ 【${x.cat}】${x.theme}`).join('\n');
   return `私は広島県内の印刷会社（従業員約170名）で、社内勉強会「萬財塾」を運営している取締役です。
 
 【萬財塾の概要】
-・隔週木曜日 10:00〜10:30（30分間）
-・場所：4階食堂
+・隔週木曜日 10:00〜10:30（30分間）／4階食堂
 ・参加メンバー：制作2部・営業 計7名（竹野・大野・北角・中田・永田・地畠・山村）
 ・2024年5月スタート、現在第${total}回まで実施済み
 
-【目的】
-①社会に必要な知識を高める（一般常識から専門知識まで知見を拡げる）
-②語彙力の強化（言葉を知る、表現力を高める）
-③次世代リーダー育成と共通理解の促進
+【目的】 ①社会知識を高める ②語彙力強化 ③次世代リーダー育成
 
-【運営スタイル】
-・事前に読み物のコピーを配布し、当日話し合い・goodポイントとnext challengeを伝え合う
-・ファシリテーターからの「あるべき論」は最小限にし、メンバーの発言を尊重
+【運営】事前に読み物を配布→当日討議→goodポイント・next challenge共有。あるべき論は最小限。
 
-【これまでのテーマ一覧（全${total}回）】
-${fullList}
+【テーマ一覧（全${total}回）】
+${full}
 
-【カテゴリ別実施回数】
-${catSummary}
+【カテゴリ別回数】${catS}
 
-【直近6回のテーマ（参考）】
-${recent}
+【直近6回】
+${rec}
 
 ---
-
 第${next}回のテーマを3案提案してください。
-各案について以下の形式でお願いします：
 
 ■ 案①
 テーマ名：
-読み物・素材の提案（記事・書籍・動画など具体的に）：
+素材提案（記事・書籍・動画など具体的に）：
 話し合うポイント（2〜3個）：
-選んだ理由（過去テーマとのバランス・このメンバーへの効果）：
+選んだ理由（バランス・メンバーへの効果）：
 
-■ 案②（同上）
+■ 案②（同上）　■ 案③（同上）
 
-■ 案③（同上）
-
-※印刷会社のクリエイター・営業メンバーに最適で、30分の議論に向いたテーマをお願いします。
-※AI・デジタル系は今後も継続したいですが、偏りすぎないようにしてください。
-※直近のテーマと被らないよう、カテゴリのバランスにも配慮してください。`;
+※印刷会社のクリエイター・営業メンバーに最適で30分の議論向き。AIは継続しつつカテゴリバランスも配慮。`;
 }
 
 function copyPrompt(){
-  const text = document.getElementById('aiPromptBox').textContent;
-  navigator.clipboard.writeText(text).then(()=>{
-    closeModal('aiModal'); toast('✅ コピーしました！Claudeのチャットに貼り付けてください','ok');
-  }).catch(()=>{
-    const ta=document.createElement('textarea'); ta.value=text;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    closeModal('aiModal'); toast('✅ コピーしました！Claudeのチャットに貼り付けてください','ok');
+  const text=document.getElementById('aiPromptBox').textContent;
+  navigator.clipboard.writeText(text).then(()=>{ closeModal('aiModal'); toast('✅ コピーしました！Claudeに貼り付けてください','ok'); }).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    closeModal('aiModal'); toast('✅ コピーしました！Claudeに貼り付けてください','ok');
   });
 }
 
-/* ─── Toast ─── */
-let toastTimer;
-function toast(msg, type=''){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast ${type}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.classList.add('hidden'), 3400);
+/* ─── Admin ─── */
+function isAdmin(){ return !!localStorage.getItem('mzjuku_admin'); }
+
+function setAdminPwd(){
+  const pwd = document.getElementById('adminPwdInput').value.trim();
+  if(pwd.length < 4){ toast('4文字以上のパスワードを入力してください','err'); return; }
+  localStorage.setItem('mzjuku_admin', pwd);
+  document.getElementById('adminPwdStatus').textContent = '✅ 管理者パスワードが設定されました。';
+  document.getElementById('adminPwdStatus').style.color = '#065f46';
+  document.getElementById('adminPwdInput').value = '';
+  toast('✅ 管理者パスワードを設定しました','ok');
 }
 
-/* ═══════════════════════════════════════
-   INIT
-═══════════════════════════════════════ */
-async function reload(){
-  document.getElementById('sessionsGrid').innerHTML =
-    `<div class="loading" style="grid-column:1/-1"><div class="spin"></div>GitHubから読み込み中...</div>`;
-  try {
-    extra = await loadExtra();
-  } catch(e) {
-    // try localStorage fallback
-    try { extra = JSON.parse(localStorage.getItem('mzjuku_local')||'[]'); } catch(_){}
-    toast(`GitHub読み込み失敗（ローカルで表示）: ${e.message}`,'err');
+function toggleEdit(){
+  const form = document.getElementById('editForm');
+  if(form.style.display==='none'||!form.style.display){
+    // populate form
+    const s = getSession(currentWeek);
+    if(!s) return;
+    const dateStr = s.date.replace(/\//g,'-').split('-').map((v,i)=>i>0?v.padStart(2,'0'):v).join('-');
+    document.getElementById('editDate').value   = dateStr;
+    document.getElementById('editTheme').value  = s.theme;
+    document.getElementById('editPoints').value = s.points;
+    document.getElementById('editNote').value   = s.note||'';
+    document.getElementById('editCat').value    = s.cat;
+    form.style.display='block';
+    document.getElementById('editToggleBtn').textContent='✏ 編集中';
+  } else {
+    cancelEdit();
   }
-  ALL = [...BASE, ...extra];
-  renderStats();
-  render();
 }
 
-(async ()=>{
-  const cfg = getCfg();
-  if(cfg.owner && cfg.token){
-    updateStatus(true);
+function cancelEdit(){
+  document.getElementById('editForm').style.display='none';
+  document.getElementById('editToggleBtn').textContent='✏ 編集';
+}
+
+function getSession(week){ return ALL.find(s=>s.week===week); }
+
+async function saveEdit(){
+  const s = getSession(currentWeek); if(!s) return;
+  const rawDate  = document.getElementById('editDate').value;
+  const theme    = document.getElementById('editTheme').value.trim();
+  const points   = document.getElementById('editPoints').value.trim();
+  const cat      = document.getElementById('editCat').value;
+  const note     = document.getElementById('editNote').value.trim();
+  if(!theme){ toast('テーマを入力してください','err'); return; }
+
+  const d = new Date(rawDate);
+  const date = rawDate ? `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}` : s.date;
+  const updated = { ...s, date, theme, points, cat, note, sp: note.includes('次世代') };
+
+  const btn = document.getElementById('editSaveBtn');
+  btn.disabled=true; btn.textContent='保存中...';
+  try {
+    const isBase = BASE.some(b=>b.week===currentWeek);
+    if(isBase){
+      // Store override in session_data.json
+      if(!sessionData.overrides) sessionData.overrides={};
+      sessionData.overrides[`week_${currentWeek}`]={ date, theme, points, cat, note, sp: note.includes('次世代') };
+      await saveSessionData();
+    } else {
+      // Update in extra sessions array
+      const idx = extra.findIndex(e=>e.week===currentWeek);
+      if(idx>=0) extra[idx]={ ...extra[idx], date, theme, points, cat, note, sp: note.includes('次世代') };
+      await saveSessions();
+    }
+    // Apply to ALL
+    const ai = ALL.findIndex(x=>x.week===currentWeek);
+    if(ai>=0) ALL[ai]=updated;
+
+    cancelEdit();
+    // Refresh detail header
+    const st = CAT[cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
+    document.getElementById('dTheme').textContent=theme;
+    document.getElementById('dWeek').textContent=`第 ${currentWeek} 回　${date}`;
+    document.getElementById('dCatTag').textContent=cat;
+    document.getElementById('dCatTag').style.background=st.bg;
+    document.getElementById('dCatTag').style.color=st.color;
+    if(points){ document.getElementById('dPoints').innerHTML=`<strong>話し合うポイント</strong>${esc(points)}`; document.getElementById('dPoints').style.display='block'; }
+    else { document.getElementById('dPoints').style.display='none'; }
+
+    renderStats(); render();
+    toast('✅ 保存しました','ok');
+  } catch(e){ toast(`❌ ${e.message}`,'err'); }
+  finally { btn.disabled=false; btn.textContent='保存する'; }
+}
+
+/* ── Toast ── */
+let _tt;
+function toast(msg,type=''){ const el=document.getElementById('toast'); el.textContent=msg; el.className=`toast ${type}`; clearTimeout(_tt); _tt=setTimeout(()=>el.classList.add('hidden'),3400); }
+
+/* ═══════════════════════════
+   INIT
+═══════════════════════════ */
+async function reload(){
+  document.getElementById('sessionsGrid').innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>GitHubから読み込み中...</div>`;
+  try{ await loadAll(); }catch(e){ toast(`読み込みエラー: ${e.message}`,'err'); }
+  renderStats(); render();
+}
+
+(async()=>{
+  const cfg=getCfg();
+  if(cfg.owner&&cfg.token){
+    document.getElementById('connectedBadge').style.display='inline-flex';
     await reload();
   } else {
-    // fallback to localStorage
-    try { extra = JSON.parse(localStorage.getItem('mzjuku_local')||'[]'); } catch(_){}
-    ALL = [...BASE, ...extra];
-    updateStatus(false);
-    renderStats();
-    render();
+    ALL=[...BASE]; renderStats(); render();
   }
+  // 管理者ログイン確認（パスワードが設定済みならログイン状態維持）
 })();
 </script>
 </body>
