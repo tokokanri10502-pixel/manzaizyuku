@@ -19,7 +19,8 @@
     body { font-family: 'Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     header { background: var(--primary); color: white; padding: 20px 36px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-    .header-title { font-size: 24px; font-weight: 800; letter-spacing: .1em; }
+    .header-title { font-size: 24px; font-weight: 800; letter-spacing: .1em; display: flex; align-items: center; gap: 10px; }
+    .header-logo  { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; }
     .header-meta  { font-size: 12px; opacity: .65; margin-top: 4px; line-height: 1.6; }
     .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .connected-badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: #d1fae5; color: #065f46; display: none; }
@@ -187,7 +188,7 @@
 
 <header>
   <div>
-    <div class="header-title">萬財塾</div>
+    <div class="header-title"><img src="icon.png" class="header-logo" alt="萬財塾">萬財塾</div>
     <div class="header-meta">制作2部・営業 ｜ 隔週木曜 10:00〜10:30 ｜ 4階食堂<br>メンバー：竹野・大野・北角・中田・永田・地畠・山村</div>
   </div>
   <div class="header-right">
