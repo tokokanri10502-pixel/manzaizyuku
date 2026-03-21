@@ -1,0 +1,16 @@
+{
+  "name": "萬財塾",
+  "short_name": "萬財塾",
+  "description": "萬財塾 記録システム",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#1a2744",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

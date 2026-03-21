@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a2744">
+  <link rel="apple-touch-icon" href="icon.png">
   <title>萬財塾 記録システム</title>
   <style>
     :root {
@@ -780,6 +783,15 @@ async function reload(){
   if(cfg.owner&&cfg.token){ document.getElementById('connectedBadge').style.display='inline-flex'; await reload(); }
   else { ALL=[...BASE]; renderStats(); render(); }
 })();
+
+// サービスワーカーの登録
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registered', reg))
+      .catch(err => console.error('Service Worker registration failed', err));
+  });
+}
 </script>
 </body>
 </html>
