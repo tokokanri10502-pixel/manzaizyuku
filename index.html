@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a2744">
-  <link rel="apple-touch-icon" href="icon.png">
   <title>萬財塾 記録システム</title>
   <style>
     :root {
@@ -62,9 +59,10 @@
     .sessions-wrap { padding: 0 36px 48px; }
     .sessions-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 15px; }
 
-    /* カード：ポイントテキストなし */
-    .session-card { background: white; border-radius: 12px; padding: 17px 19px 15px; box-shadow: var(--shadow); border-left: 4px solid #94a3b8; transition: box-shadow .2s, transform .2s; cursor: pointer; user-select: none; }
+    /* カード */
+    .session-card { background: white; border-radius: 12px; box-shadow: var(--shadow); border-left: 4px solid #94a3b8; transition: box-shadow .2s, transform .2s; overflow: hidden; }
     .session-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .card-body { padding: 17px 19px 12px; cursor: pointer; user-select: none; }
     .card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
     .week-badge { font-size: 11px; font-weight: 700; color: var(--muted); background: var(--bg); padding: 2px 10px; border-radius: 12px; }
     .date-text  { font-size: 11px; color: #94a3b8; }
@@ -74,12 +72,38 @@
     .sp-tag    { font-size: 10px; background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
     .memo-count-badge { margin-left: auto; font-size: 11px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; display: none; }
     .memo-count-badge.visible { display: inline-block; }
+    /* メモボタン（カード下部） */
+    .card-memo-btn { width: 100%; padding: 9px 19px; background: #f8fafc; border: none; border-top: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer; text-align: left; font-family: inherit; transition: background .18s; display: flex; align-items: center; gap: 6px; }
+    .card-memo-btn:hover { background: #eff6ff; }
+    .card-memo-btn .mc { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--muted); }
 
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(2px); }
     .overlay.hidden { display: none; }
     .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,.2); }
     .modal-title   { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+    /* クイックメモモーダル */
+    .qm-modal { max-width: 420px; padding: 0; }
+    .qm-head { background: var(--primary); color: white; padding: 16px 20px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: flex-start; }
+    .qm-week { font-size: 11px; opacity: .65; margin-bottom: 3px; }
+    .qm-theme { font-size: 16px; font-weight: 800; line-height: 1.3; }
+    .qm-close { background: rgba(255,255,255,.15); border: none; color: white; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 10px; margin-top: 2px; }
+    .qm-close:hover { background: rgba(255,255,255,.3); }
+    .qm-body { padding: 20px; }
+    .qm-memos { max-height: 160px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .qm-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .qm-name-label { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+    .qm-name-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; }
+    .qm-name-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .qm-textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; resize: none; min-height: 90px; line-height: 1.6; }
+    .qm-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .qm-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+    .qm-detail-link { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 600; padding: 0; }
+    .qm-detail-link:hover { text-decoration: underline; }
+    .qm-submit { padding: 10px 22px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .qm-submit:hover { background: #1d4ed8; }
+    .qm-submit:disabled { opacity: .5; cursor: not-allowed; }
 
     /* 詳細モーダル */
     .detail-modal { max-width: 620px; padding: 0; display: flex; flex-direction: column; }
@@ -108,9 +132,6 @@
     .memo-meta  { font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
     .memo-text  { font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
     .no-memos   { font-size: 13px; color: #94a3b8; text-align: center; padding: 16px 0; }
-    .memo-form  { display: flex; flex-direction: column; gap: 8px; }
-    .memo-row   { display: flex; gap: 8px; }
-    .memo-name  { flex: 0 0 110px; }
 
     /* 添付 */
     .attach-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
@@ -159,8 +180,6 @@
       .form-2col { grid-template-columns: 1fr; }
       .search-input { width: 180px; }
       .detail-theme { font-size: 17px; }
-      .memo-row { flex-direction: column; }
-      .memo-name { flex: none; width: 100%; }
     }
   </style>
 </head>
@@ -204,7 +223,36 @@
   </div>
 </div>
 
-<!-- 詳細モーダル -->
+<!-- ★ クイックメモモーダル（シンプル版） -->
+<div class="overlay hidden" id="quickMemoModal">
+  <div class="modal qm-modal">
+    <div class="qm-head">
+      <div style="flex:1;min-width:0">
+        <div class="qm-week" id="qmWeek"></div>
+        <div class="qm-theme" id="qmTheme"></div>
+      </div>
+      <button class="qm-close" onclick="closeModal('quickMemoModal')">✕</button>
+    </div>
+    <div class="qm-body">
+      <!-- 既存メモ一覧（コンパクト） -->
+      <div class="qm-memos" id="qmMemosList"></div>
+      <!-- 名前 -->
+      <div class="qm-name-row">
+        <span class="qm-name-label">お名前</span>
+        <input type="text" class="qm-name-input" id="qmAuthor" placeholder="例：山村">
+      </div>
+      <!-- メモ入力 -->
+      <textarea class="qm-textarea" id="qmText" placeholder="感想・気づきを自由に書いてください..."></textarea>
+      <!-- ボタン -->
+      <div class="qm-actions">
+        <button class="qm-detail-link" onclick="openDetailFromQM()">📎 添付・詳細を見る →</button>
+        <button class="qm-submit" id="qmPostBtn" onclick="submitQuickMemo()">💬 投稿する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 詳細モーダル（管理者・添付ファイル用） -->
 <div class="overlay hidden" id="detailModal">
   <div class="modal detail-modal">
     <div class="detail-head">
@@ -262,19 +310,10 @@
         </div>
       </div>
 
-      <!-- メモ -->
+      <!-- メモ一覧 -->
       <div class="detail-section">
         <div class="section-title">💬 メモ・感想</div>
         <div class="memos-list" id="memosList"></div>
-        <div class="memo-form">
-          <div class="memo-row">
-            <input type="text" class="form-input memo-name" id="memoAuthor" placeholder="お名前">
-            <textarea class="form-textarea" id="memoText" style="flex:1;min-height:68px" placeholder="感想やメモを自由に書いてください..."></textarea>
-          </div>
-          <div style="text-align:right">
-            <button class="btn btn-primary btn-sm" id="memoPostBtn" onclick="submitMemo()">投稿する</button>
-          </div>
-        </div>
       </div>
 
       <!-- 添付 -->
@@ -513,14 +552,19 @@ function render(){
   g.innerHTML=list.map(s=>{
     const st=CAT[s.cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
     const mc=memoCount(s.week);
-    return `<div class="session-card" style="border-left-color:${st.border}" onclick="openDetail(${s.week})">
-  <div class="card-top"><span class="week-badge">第 ${s.week} 回</span><span class="date-text">${esc(s.date)}</span></div>
-  <div class="theme-title">${esc(s.theme)}</div>
-  <div class="card-foot">
-    <span class="cat-tag" style="background:${st.bg};color:${st.color}">${esc(s.cat)}</span>
-    ${s.sp?'<span class="sp-tag">🔹 次世代リーダーMTG</span>':''}
-    <span class="memo-count-badge ${mc?'visible':''}">${mc?'💬 '+mc+' 件':''}</span>
+    return `<div class="session-card" style="border-left-color:${st.border}">
+  <div class="card-body" onclick="openDetail(${s.week})">
+    <div class="card-top"><span class="week-badge">第 ${s.week} 回</span><span class="date-text">${esc(s.date)}</span></div>
+    <div class="theme-title">${esc(s.theme)}</div>
+    <div class="card-foot">
+      <span class="cat-tag" style="background:${st.bg};color:${st.color}">${esc(s.cat)}</span>
+      ${s.sp?'<span class="sp-tag">🔹 次世代リーダーMTG</span>':''}
+    </div>
   </div>
+  <button class="card-memo-btn" onclick="openQuickMemo(${s.week})">
+    💬 メモを書く
+    <span class="mc">${mc?mc+' 件のメモあり':''}</span>
+  </button>
 </div>`;
   }).join('');
 }
@@ -533,10 +577,72 @@ function setFilter(cat,btn){
 
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-['setupModal','addModal','aiModal','detailModal'].forEach(id=>{
+['setupModal','addModal','aiModal','detailModal','quickMemoModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) closeModal(id); });
 });
 
+/* ====== クイックメモ（シンプル版） ====== */
+function openQuickMemo(week){
+  currentWeek=week;
+  const s=ALL.find(x=>x.week===week); if(!s) return;
+  document.getElementById('qmWeek').textContent=`第 ${s.week} 回　${s.date}`;
+  document.getElementById('qmTheme').textContent=s.theme;
+  // 名前を前回から引き継ぎ
+  document.getElementById('qmAuthor').value=localStorage.getItem('mzjuku_name')||'';
+  document.getElementById('qmText').value='';
+  // 既存メモ表示（コンパクト）
+  renderQuickMemos(week);
+  openModal('quickMemoModal');
+  // テキストエリアにフォーカス
+  setTimeout(()=>{
+    const el=document.getElementById('qmText');
+    if(el) el.focus();
+  }, 100);
+}
+
+function renderQuickMemos(week){
+  const d=sessionData[`week_${week}`];
+  const memos=d?(d.memos||[]):[];
+  const el=document.getElementById('qmMemosList');
+  if(!memos.length){ el.innerHTML='<div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0">まだメモがありません</div>'; return; }
+  el.innerHTML=memos.map(m=>`<div class="memo-card"><div class="memo-meta">✏️ ${esc(m.author)}&ensp;<span style="font-weight:400;color:#94a3b8">${esc(m.time)}</span></div><div class="memo-text">${esc(m.text)}</div></div>`).join('');
+  // 最新メモを下にスクロール
+  el.scrollTop = el.scrollHeight;
+}
+
+async function submitQuickMemo(){
+  const author=document.getElementById('qmAuthor').value.trim();
+  const text  =document.getElementById('qmText').value.trim();
+  if(!author){ toast('お名前を入力してください','err'); document.getElementById('qmAuthor').focus(); return; }
+  if(!text)  { toast('メモを入力してください','err'); document.getElementById('qmText').focus(); return; }
+  localStorage.setItem('mzjuku_name',author);
+  const btn=document.getElementById('qmPostBtn');
+  btn.disabled=true; btn.textContent='投稿中...';
+  const key=`week_${currentWeek}`;
+  if(!sessionData[key]) sessionData[key]={memos:[],attachments:[]};
+  const now=new Date();
+  const ts=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  sessionData[key].memos.push({author,text,time:ts});
+  try {
+    await saveSessionData();
+    document.getElementById('qmText').value='';
+    renderQuickMemos(currentWeek);
+    render();
+    toast('✅ メモを投稿しました','ok');
+  } catch(e){
+    sessionData[key].memos.pop();
+    toast(`❌ ${e.message}`,'err');
+  } finally {
+    btn.disabled=false; btn.textContent='💬 投稿する';
+  }
+}
+
+function openDetailFromQM(){
+  closeModal('quickMemoModal');
+  openDetail(currentWeek);
+}
+
+/* ====== 詳細モーダル（管理者・添付ファイル用） ====== */
 function openDetail(week){
   currentWeek=week;
   const s=ALL.find(x=>x.week===week); if(!s) return;
@@ -548,8 +654,6 @@ function openDetail(week){
   const pts=document.getElementById('dPoints');
   if(s.points){ pts.innerHTML=`<strong>話し合うポイント</strong>${esc(s.points)}`; pts.style.display='block'; }
   else { pts.style.display='none'; }
-  document.getElementById('memoAuthor').value=localStorage.getItem('mzjuku_name')||'';
-  document.getElementById('memoText').value='';
   document.getElementById('uploadProg').style.display='none';
   document.getElementById('editForm').style.display='none';
   document.getElementById('editToggleBtn').textContent='✏ 編集';
@@ -562,7 +666,7 @@ function renderMemos(week){
   const d=sessionData[`week_${week}`];
   const memos=d?(d.memos||[]):[];
   const el=document.getElementById('memosList');
-  if(!memos.length){ el.innerHTML='<div class="no-memos">まだメモがありません。最初の感想を書いてみましょう！</div>'; return; }
+  if(!memos.length){ el.innerHTML='<div class="no-memos">まだメモがありません</div>'; return; }
   el.innerHTML=memos.map(m=>`<div class="memo-card"><div class="memo-meta">✏️ ${esc(m.author)}&ensp;<span style="font-weight:400;color:#94a3b8">${esc(m.time)}</span></div><div class="memo-text">${esc(m.text)}</div></div>`).join('');
 }
 function renderAttachments(week){
@@ -572,24 +676,6 @@ function renderAttachments(week){
   if(!atts.length){ el.innerHTML='<div class="no-attach">添付ファイルはありません</div>'; return; }
   const icon=n=>{ const e=n.split('.').pop().toLowerCase(); return {pdf:'📄',png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🖼',xlsx:'📊',xls:'📊',pptx:'📊',doc:'📝',docx:'📝'}[e]||'📎'; };
   el.innerHTML=atts.map(a=>`<div class="attach-item"><span class="attach-icon">${icon(a.name)}</span><span class="attach-name">${esc(a.name)}</span><a class="attach-dl" href="${esc(a.url)}" target="_blank">ダウンロード</a></div>`).join('');
-}
-
-async function submitMemo(){
-  const author=document.getElementById('memoAuthor').value.trim();
-  const text  =document.getElementById('memoText').value.trim();
-  if(!author){ toast('お名前を入力してください','err'); return; }
-  if(!text)  { toast('メモを入力してください','err'); return; }
-  localStorage.setItem('mzjuku_name',author);
-  const btn=document.getElementById('memoPostBtn');
-  btn.disabled=true; btn.textContent='投稿中...';
-  const key=`week_${currentWeek}`;
-  if(!sessionData[key]) sessionData[key]={memos:[],attachments:[]};
-  const now=new Date();
-  const ts=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  sessionData[key].memos.push({author,text,time:ts});
-  try { await saveSessionData(); document.getElementById('memoText').value=''; renderMemos(currentWeek); render(); toast('✅ メモを投稿しました','ok'); }
-  catch(e){ sessionData[key].memos.pop(); toast(`❌ ${e.message}`,'err'); }
-  finally { btn.disabled=false; btn.textContent='投稿する'; }
 }
 
 async function handleUpload(event){
@@ -783,15 +869,6 @@ async function reload(){
   if(cfg.owner&&cfg.token){ document.getElementById('connectedBadge').style.display='inline-flex'; await reload(); }
   else { ALL=[...BASE]; renderStats(); render(); }
 })();
-
-// サービスワーカーの登録
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker registered', reg))
-      .catch(err => console.error('Service Worker registration failed', err));
-  });
-}
 </script>
 </body>
 </html>
