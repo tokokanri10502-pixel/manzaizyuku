@@ -201,6 +201,7 @@
     <div class="header-meta">制作2部・営業 ｜ 隔週木曜 10:00〜10:30 ｜ 4階食堂<br>メンバー：竹野・大野・北角・中田・永田・地畠・山村</div>
   </div>
   <div class="header-right">
+    <span class="connected-badge" id="connectedBadge">● GitHub 接続中</span>
     <button class="btn btn-ai"      onclick="openAI()">🤖 次回テーマをAIに提案</button>
     <button class="btn btn-ghost"   onclick="openAdd()">＋ 新規追加</button>
     <button class="btn btn-setting" onclick="openSetup()">⚙ 設定</button>
@@ -343,20 +344,75 @@
 <div class="overlay hidden" id="setupModal">
   <div class="modal" style="max-width:480px">
     <div class="modal-title">⚙ 設定</div>
-    <div class="form-section-title">管理者パスワード（セッション編集・追加機能）</div>
-    <div class="form-row">
-      <label class="form-label">新しいパスワード</label>
-      <div style="display:flex;gap:8px">
-        <input type="password" class="form-input" id="adminPwdInput" placeholder="4文字以上で設定">
-        <button class="btn btn-primary btn-sm" onclick="setAdminPwd()" style="white-space:nowrap">設定</button>
+    <!-- 未ログイン：ログイン or 初回設定 -->
+    <div id="setupLoginSection">
+      <div id="setupLoginForm">
+        <div class="form-section-title">管理者ログイン</div>
+        <div class="form-row">
+          <label class="form-label">パスワード</label>
+          <div style="display:flex;gap:8px">
+            <input type="password" class="form-input" id="setupLoginPwd" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')adminLoginFromSetup()">
+            <button class="btn btn-primary btn-sm" onclick="adminLoginFromSetup()" style="white-space:nowrap">ログイン</button>
+          </div>
+          <div class="form-hint" id="setupLoginStatus" style="color:#b91c1c"></div>
+        </div>
       </div>
-      <div class="form-hint" id="adminPwdStatus"></div>
+      <div id="setupFirstForm" style="display:none">
+        <div class="form-section-title">初回管理者設定</div>
+        <div class="form-row">
+          <label class="form-label">管理者パスワード（4文字以上）</label>
+          <div style="display:flex;gap:8px">
+            <input type="password" class="form-input" id="adminPwdInput" placeholder="パスワードを設定">
+            <button class="btn btn-primary btn-sm" onclick="setAdminPwd()" style="white-space:nowrap">設定</button>
+          </div>
+          <div class="form-hint" id="adminPwdStatus"></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">GitHub Personal Access Token</label>
+          <input type="password" class="form-input" id="cfgTokenFirst" placeholder="ghp_xxxxxxxxxxxx">
+          <div class="form-hint">書き込み用。管理者端末のみに保存されます。</div>
+        </div>
+        <div class="modal-actions" style="padding:0;margin-top:12px">
+          <button class="btn btn-primary" onclick="saveFirstSetup()">設定を保存して管理者ログイン</button>
+        </div>
+      </div>
     </div>
-    <div class="form-section-title">データ管理</div>
-    <div class="form-hint" style="margin-bottom:8px">セッションデータ・メモはこのブラウザのみに保存されます。</div>
+    <!-- ログイン後：管理者メニュー -->
+    <div id="setupAdminSection" style="display:none">
+      <div class="form-section-title">GitHub トークン更新</div>
+      <div class="form-row">
+        <input type="password" class="form-input" id="cfgToken" placeholder="ghp_xxxxxxxxxxxx">
+        <div class="form-hint">変更する場合のみ入力してください。</div>
+      </div>
+      <div class="form-section-title">管理者パスワード変更</div>
+      <div class="form-row">
+        <div style="display:flex;gap:8px">
+          <input type="password" class="form-input" id="adminPwdChangeInput" placeholder="新しいパスワード（4文字以上）">
+          <button class="btn btn-primary btn-sm" onclick="changeAdminPwd()" style="white-space:nowrap">変更</button>
+        </div>
+        <div class="form-hint" id="adminPwdChangeStatus"></div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal('setupModal')">閉じる</button>
-      <button class="btn btn-danger" onclick="clearAllData()" style="margin-right:auto">全データを削除</button>
+      <button class="btn btn-primary" id="saveTokenBtn" onclick="saveGhToken()" style="display:none">トークンを更新</button>
+      <button class="btn btn-ghost" id="adminLogoutBtn" onclick="adminLogout()" style="display:none;background:#64748b">ログアウト</button>
+    </div>
+  </div>
+</div>
+
+<!-- パスワード確認モーダル -->
+<div class="overlay hidden" id="pwdModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-title">🔐 管理者確認</div>
+    <div class="form-row">
+      <label class="form-label">パスワードを入力してください</label>
+      <input type="password" class="form-input" id="pwdModalInput" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')submitAdminPwd()">
+      <div class="form-hint" id="pwdModalError" style="color:#b91c1c;margin-top:4px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal('pwdModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="submitAdminPwd()">確認</button>
     </div>
   </div>
 </div>
@@ -455,24 +511,83 @@ const CAT = {
   "思考・フレームワーク": { bg:"#fef9c3", color:"#713f12", border:"#eab308" },
 };
 
-const LS_DATA = 'mzjuku_data';
-const LS_SESSIONS = 'mzjuku_sessions';
+const GH_OWNER = 'tokokanri10502';
+const GH_REPO  = 'manzai-juku3';
+const GH_RAW   = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main`;
+const GH_API   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents`;
+const LS_TOKEN = 'mzjuku_token';
+
+function getToken(){ return localStorage.getItem(LS_TOKEN)||''; }
+function setToken(t){ if(t) localStorage.setItem(LS_TOKEN,t); }
+
+/* 管理者セッション管理 */
+function isAdmin(){ return !!sessionStorage.getItem('mzjuku_admin_ok'); }
+function hasPwd(){ return !!localStorage.getItem('mzjuku_admin'); }
+function checkPwd(pwd){ const s=localStorage.getItem('mzjuku_admin'); return !!s&&s===pwd; }
+
+let _pendingAdminAction=null;
+function requireAdmin(callback){
+  if(isAdmin()){ callback(); return; }
+  _pendingAdminAction=callback;
+  document.getElementById('pwdModalInput').value='';
+  document.getElementById('pwdModalError').textContent='';
+  openModal('pwdModal');
+  setTimeout(()=>document.getElementById('pwdModalInput').focus(),100);
+}
+function submitAdminPwd(){
+  const pwd=document.getElementById('pwdModalInput').value;
+  if(checkPwd(pwd)){
+    sessionStorage.setItem('mzjuku_admin_ok','1');
+    closeModal('pwdModal');
+    if(_pendingAdminAction){ _pendingAdminAction(); _pendingAdminAction=null; }
+  } else {
+    document.getElementById('pwdModalError').textContent='❌ パスワードが違います';
+  }
+}
+
+/* GitHub 読み取り（認証不要・公開リポジトリ） */
+async function ghReadRaw(filename){
+  const r=await fetch(`${GH_RAW}/${filename}?_=${Date.now()}`);
+  if(!r.ok) return null;
+  return r.json();
+}
+
+/* GitHub 書き込み（トークン必要） */
+async function ghWriteFile(filename, content, message){
+  const token=getToken();
+  if(!token) throw new Error('GitHubトークンが未設定です。⚙ 設定から入力してください');
+  const getR=await fetch(`${GH_API}/${filename}`,{headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json'}});
+  let sha=null;
+  if(getR.ok){ const d=await getR.json(); sha=d.sha; }
+  else if(getR.status!==404) throw new Error(`読み取りエラー: ${getR.status}`);
+  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(content,null,2))));
+  const body={message,content:encoded}; if(sha) body.sha=sha;
+  const putR=await fetch(`${GH_API}/${filename}`,{method:'PUT',headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!putR.ok){ const e=await putR.json().catch(()=>({})); throw new Error(e.message||`書き込みエラー: ${putR.status}`); }
+  return putR.json();
+}
 
 let extra=[], sessionData={}, ALL=[...BASE], currentFilter='all', currentWeek=null;
 
-function isAdmin(){ return !!localStorage.getItem('mzjuku_admin'); }
-
-function loadAll(){
-  try{ extra=JSON.parse(localStorage.getItem(LS_SESSIONS)||'[]'); }catch(e){ extra=[]; }
-  try{ sessionData=JSON.parse(localStorage.getItem(LS_DATA)||'{}'); }catch(e){ sessionData={}; }
+async function loadAll(){
+  try{
+    const [sf,df]=await Promise.all([
+      ghReadRaw('sessions.json').catch(()=>null),
+      ghReadRaw('session_data.json').catch(()=>null),
+    ]);
+    extra=sf||[]; sessionData=df||{};
+    document.getElementById('connectedBadge').style.display='inline-flex';
+  } catch(e){
+    extra=[]; sessionData={};
+  }
   const ov=sessionData.overrides||{};
   ALL=[...BASE.map(s=>{ const o=ov[`week_${s.week}`]; return o?{...s,...o}:s; }), ...extra];
 }
-function saveSessionData(){
-  localStorage.setItem(LS_DATA, JSON.stringify(sessionData));
+async function saveSessionData(){
+  await ghWriteFile('session_data.json',sessionData,'萬財塾 メモ更新');
 }
-function saveSessions(){
-  localStorage.setItem(LS_SESSIONS, JSON.stringify(extra));
+async function saveSessions(){
+  await ghWriteFile('sessions.json',extra,'萬財塾 セッション更新');
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -529,7 +644,7 @@ function setFilter(cat,btn){
 
 function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-['setupModal','addModal','aiModal','detailModal','quickMemoModal'].forEach(id=>{
+['setupModal','addModal','aiModal','detailModal','quickMemoModal','pwdModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){ if(e.target===this) closeModal(id); });
 });
 
@@ -576,7 +691,7 @@ async function submitQuickMemo(){
   const ts=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   sessionData[key].memos.push({author,text,time:ts});
   try {
-    saveSessionData();
+    await saveSessionData();
     document.getElementById('qmText').value='';
     renderQuickMemos(currentWeek);
     render();
@@ -632,17 +747,25 @@ function renderAttachments(week){
 
 async function handleUpload(event){
   const file=event.target.files[0]; if(!file) return;
-  if(file.size>2*1024*1024){ toast('❌ 2MB以内のファイルにしてください','err'); return; }
+  if(file.size>24*1024*1024){ toast('❌ 24MB以内のファイルにしてください','err'); return; }
   const prog=document.getElementById('uploadProg');
-  prog.style.display='block'; prog.textContent=`「${file.name}」を保存中...`;
+  prog.style.display='block'; prog.textContent=`「${file.name}」をアップロード中...`;
   try {
-    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
+    const b64=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); });
+    const path=`attachments/week_${currentWeek}/${file.name}`;
+    const token=getToken();
+    const ex=await fetch(`${GH_API}/${path}`,{headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json'}});
+    let sha=null; if(ex.ok){ const d=await ex.json(); sha=d.sha; }
+    const body={message:`添付: ${file.name}`,content:b64}; if(sha) body.sha=sha;
+    const putR=await fetch(`${GH_API}/${path}`,{method:'PUT',headers:{Authorization:`token ${token}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!putR.ok){ const e=await putR.json().catch(()=>({})); throw new Error(e.message||`アップロードエラー`); }
+    const rawUrl=`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${path}`;
     const key=`week_${currentWeek}`;
     if(!sessionData[key]) sessionData[key]={memos:[],attachments:[]};
     sessionData[key].attachments=(sessionData[key].attachments||[]).filter(a=>a.name!==file.name);
-    sessionData[key].attachments.push({name:file.name,url:dataUrl});
-    saveSessionData(); renderAttachments(currentWeek); toast(`✅「${file.name}」を添付しました`,'ok');
-  } catch(e){ toast(`❌ 保存失敗: ${e.message}`,'err'); }
+    sessionData[key].attachments.push({name:file.name,url:rawUrl});
+    await saveSessionData(); renderAttachments(currentWeek); toast(`✅「${file.name}」を添付しました`,'ok');
+  } catch(e){ toast(`❌ アップロード失敗: ${e.message}`,'err'); }
   finally { prog.style.display='none'; event.target.value=''; }
 }
 
@@ -651,13 +774,56 @@ function setAdminPwd(){
   const pwd=document.getElementById('adminPwdInput').value.trim();
   if(pwd.length<4){ toast('4文字以上のパスワードを入力してください','err'); return; }
   localStorage.setItem('mzjuku_admin',pwd);
-  document.getElementById('adminPwdStatus').textContent='✅ 管理者パスワードが設定されました';
+  sessionStorage.setItem('mzjuku_admin_ok','1');
+  document.getElementById('adminPwdStatus').textContent='✅ 設定しました';
   document.getElementById('adminPwdStatus').style.color='#065f46';
   document.getElementById('adminPwdInput').value='';
   toast('✅ 管理者パスワードを設定しました','ok');
 }
+function saveGhToken(){
+  const t=document.getElementById('cfgToken').value.trim();
+  if(!t){ toast('トークンを入力してください','err'); return; }
+  setToken(t);
+  document.getElementById('cfgToken').value='';
+  toast('✅ トークンを保存しました','ok');
+}
+function saveFirstSetup(){
+  const pwd=document.getElementById('adminPwdInput').value.trim();
+  const token=document.getElementById('cfgTokenFirst').value.trim();
+  if(pwd.length<4){ toast('パスワードは4文字以上にしてください','err'); return; }
+  if(!token){ toast('GitHubトークンを入力してください','err'); return; }
+  localStorage.setItem('mzjuku_admin',pwd);
+  setToken(token);
+  sessionStorage.setItem('mzjuku_admin_ok','1');
+  closeModal('setupModal');
+  toast('✅ 管理者設定が完了しました','ok');
+}
+function adminLoginFromSetup(){
+  const pwd=document.getElementById('setupLoginPwd').value;
+  if(checkPwd(pwd)){
+    sessionStorage.setItem('mzjuku_admin_ok','1');
+    openSetup();
+  } else {
+    document.getElementById('setupLoginStatus').textContent='❌ パスワードが違います';
+  }
+}
+function adminLogout(){
+  sessionStorage.removeItem('mzjuku_admin_ok');
+  openSetup();
+  toast('ログアウトしました');
+}
+function changeAdminPwd(){
+  const pwd=document.getElementById('adminPwdChangeInput').value.trim();
+  if(pwd.length<4){ toast('4文字以上のパスワードを入力してください','err'); return; }
+  localStorage.setItem('mzjuku_admin',pwd);
+  document.getElementById('adminPwdChangeStatus').textContent='✅ 変更しました';
+  document.getElementById('adminPwdChangeStatus').style.color='#065f46';
+  document.getElementById('adminPwdChangeInput').value='';
+  toast('✅ 管理者パスワードを変更しました','ok');
+}
 
 function toggleEdit(){
+  if(!isAdmin()){ requireAdmin(()=>toggleEdit()); return; }
   const form=document.getElementById('editForm');
   if(form.style.display==='none'||!form.style.display){
     const s=ALL.find(x=>x.week===currentWeek); if(!s) return;
@@ -693,11 +859,11 @@ async function saveEdit(){
     if(isBase){
       if(!sessionData.overrides) sessionData.overrides={};
       sessionData.overrides[`week_${currentWeek}`]={date,theme,points,cat,note,sp};
-      saveSessionData();
+      await saveSessionData();
     } else {
       const idx=extra.findIndex(e=>e.week===currentWeek);
       if(idx>=0) extra[idx]={...extra[idx],date,theme,points,cat,note,sp};
-      saveSessions();
+      await saveSessions();
     }
     const ai=ALL.findIndex(x=>x.week===currentWeek);
     if(ai>=0) ALL[ai]={...ALL[ai],date,theme,points,cat,note,sp};
@@ -717,28 +883,42 @@ async function saveEdit(){
 
 /* 設定 */
 function openSetup(){
-  document.getElementById('adminPwdInput').value='';
-  const has=!!localStorage.getItem('mzjuku_admin');
-  document.getElementById('adminPwdStatus').textContent=has?'✅ 管理者パスワード設定済み。編集機能が有効です。':'未設定（設定すると編集ボタンが使えます）';
-  document.getElementById('adminPwdStatus').style.color=has?'#065f46':'';
+  document.getElementById('adminPwdStatus').textContent='';
+  document.getElementById('adminPwdChangeStatus').textContent='';
+  document.getElementById('setupLoginStatus').textContent='';
+  document.getElementById('setupLoginPwd').value='';
+  if(isAdmin()){
+    document.getElementById('setupLoginSection').style.display='none';
+    document.getElementById('setupAdminSection').style.display='block';
+    document.getElementById('saveTokenBtn').style.display='inline-flex';
+    document.getElementById('adminLogoutBtn').style.display='inline-flex';
+  } else if(hasPwd()){
+    document.getElementById('setupLoginSection').style.display='block';
+    document.getElementById('setupLoginForm').style.display='block';
+    document.getElementById('setupFirstForm').style.display='none';
+    document.getElementById('setupAdminSection').style.display='none';
+    document.getElementById('saveTokenBtn').style.display='none';
+    document.getElementById('adminLogoutBtn').style.display='none';
+  } else {
+    document.getElementById('setupLoginSection').style.display='block';
+    document.getElementById('setupLoginForm').style.display='none';
+    document.getElementById('setupFirstForm').style.display='block';
+    document.getElementById('setupAdminSection').style.display='none';
+    document.getElementById('saveTokenBtn').style.display='none';
+    document.getElementById('adminLogoutBtn').style.display='none';
+  }
   openModal('setupModal');
-}
-function clearAllData(){
-  if(!confirm('すべてのデータ（追加セッション・メモ・添付）を削除しますか？\nこの操作は元に戻せません。')) return;
-  localStorage.removeItem(LS_DATA);
-  localStorage.removeItem(LS_SESSIONS);
-  localStorage.removeItem('mzjuku_admin');
-  extra=[]; sessionData={}; ALL=[...BASE];
-  renderStats(); render(); closeModal('setupModal'); toast('全データを削除しました');
 }
 
 /* 追加 */
 function openAdd(){
-  const nw=Math.max(...ALL.map(s=>s.week))+1;
-  document.getElementById('newWeek').value=nw;
-  document.getElementById('newDate').value=nextThursday();
-  ['newTheme','newPoints','newNote'].forEach(id=>document.getElementById(id).value='');
-  openModal('addModal');
+  requireAdmin(()=>{
+    const nw=Math.max(...ALL.map(s=>s.week))+1;
+    document.getElementById('newWeek').value=nw;
+    document.getElementById('newDate').value=nextThursday();
+    ['newTheme','newPoints','newNote'].forEach(id=>document.getElementById(id).value='');
+    openModal('addModal');
+  });
 }
 function nextThursday(){ const d=new Date(); const diff=(4-d.getDay()+7)%7||14; d.setDate(d.getDate()+diff); return d.toISOString().split('T')[0]; }
 async function addSession(){
@@ -754,7 +934,7 @@ async function addSession(){
   const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代'),createdAt:Date.now()};
   const btn=document.getElementById('addBtn');
   btn.disabled=true; btn.textContent='保存中...';
-  try { extra.push(item); saveSessions(); ALL=[...BASE,...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
+  try { extra.push(item); await saveSessions(); ALL=[...BASE,...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
   catch(e){ extra.pop(); toast(`❌ ${e.message}`,'err'); }
   finally { btn.disabled=false; btn.textContent='追加する'; }
 }
@@ -781,12 +961,13 @@ function copyPrompt(){
 let _tt;
 function toast(msg,type=''){ const el=document.getElementById('toast'); el.textContent=msg; el.className=`toast ${type}`; clearTimeout(_tt); _tt=setTimeout(()=>el.classList.add('hidden'),3400); }
 
-function reload(){
-  loadAll();
+async function reload(){
+  document.getElementById('sessionsGrid').innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>GitHubから読み込み中...</div>`;
+  try{ await loadAll(); }catch(e){ toast(`読み込みエラー: ${e.message}`,'err'); }
   renderStats(); render();
 }
 
-loadAll(); renderStats(); render();
+(async()=>{ await loadAll(); renderStats(); render(); })();
 
 if('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
