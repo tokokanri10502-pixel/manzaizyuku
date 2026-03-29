@@ -331,7 +331,7 @@
       <div class="detail-section">
         <div class="section-title">📎 資料・添付ファイル</div>
         <div class="attach-list" id="attachList"></div>
-        <label class="upload-label">
+        <label class="upload-label" id="uploadLabel">
           <input type="file" id="fileInput" style="display:none" onchange="handleUpload(event)">
           📎 資料を添付する
         </label>
@@ -362,10 +362,7 @@
         <div class="form-section-title">初回管理者設定</div>
         <div class="form-row">
           <label class="form-label">管理者パスワード（4文字以上）</label>
-          <div style="display:flex;gap:8px">
-            <input type="password" class="form-input" id="adminPwdInput" placeholder="パスワードを設定">
-            <button class="btn btn-primary btn-sm" onclick="setAdminPwd()" style="white-space:nowrap">設定</button>
-          </div>
+          <input type="password" class="form-input" id="adminPwdInput" placeholder="パスワードを設定">
           <div class="form-hint" id="adminPwdStatus"></div>
         </div>
         <div class="form-row">
@@ -686,6 +683,7 @@ async function submitQuickMemo(){
   const text  =document.getElementById('qmText').value.trim();
   if(!author){ toast('お名前を入力してください','err'); document.getElementById('qmAuthor').focus(); return; }
   if(!text)  { toast('メモを入力してください','err'); document.getElementById('qmText').focus(); return; }
+  if(!getToken()){ toast('❌ メモの投稿にはGitHubトークンが必要です。管理者端末から投稿してください','err'); return; }
   localStorage.setItem('mzjuku_name',author);
   const btn=document.getElementById('qmPostBtn');
   btn.disabled=true; btn.textContent='投稿中...';
@@ -729,6 +727,7 @@ function openDetail(week){
   document.getElementById('editForm').style.display='none';
   document.getElementById('editToggleBtn').textContent='✏ 編集';
   document.getElementById('editToggleBtn').style.display=isAdmin()?'inline-flex':'none';
+  document.getElementById('uploadLabel').style.display=isAdmin()?'':'none';
   renderMemos(week); renderAttachments(week);
   openModal('detailModal');
 }
@@ -936,7 +935,7 @@ async function addSession(){
   const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代'),createdAt:Date.now()};
   const btn=document.getElementById('addBtn');
   btn.disabled=true; btn.textContent='保存中...';
-  try { extra.push(item); await saveSessions(); ALL=[...BASE,...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
+  try { extra.push(item); await saveSessions(); const ov2=sessionData.overrides||{}; ALL=[...BASE.map(s=>{const o=ov2[`week_${s.week}`];return o?{...s,...o}:s;}),...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
   catch(e){ extra.pop(); toast(`❌ ${e.message}`,'err'); }
   finally { btn.disabled=false; btn.textContent='追加する'; }
 }
