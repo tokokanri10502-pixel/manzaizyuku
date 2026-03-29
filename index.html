@@ -751,7 +751,24 @@ function renderAttachments(week){
   const el=document.getElementById('attachList');
   if(!atts.length){ el.innerHTML='<div class="no-attach">添付ファイルはありません</div>'; return; }
   const icon=n=>{ const e=n.split('.').pop().toLowerCase(); return {pdf:'📄',png:'🖼',jpg:'🖼',jpeg:'🖼',gif:'🖼',xlsx:'📊',xls:'📊',pptx:'📊',doc:'📝',docx:'📝'}[e]||'📎'; };
-  el.innerHTML=atts.map(a=>`<div class="attach-item"><span class="attach-icon">${icon(a.name)}</span><span class="attach-name">${esc(a.name)}</span><a class="attach-dl" href="${esc(a.url)}" target="_blank">ダウンロード</a></div>`).join('');
+  el.innerHTML=atts.map(a=>`<div class="attach-item"><span class="attach-icon">${icon(a.name)}</span><span class="attach-name">${esc(a.name)}</span><a class="attach-dl" href="${esc(a.url)}" download="${esc(a.name)}" onclick="dlFile(this,event)">⬇ ダウンロード</a></div>`).join('');
+}
+
+async function dlFile(el,e){
+  e.preventDefault();
+  const url=el.href, filename=el.download||url.split('/').pop();
+  const origText=el.textContent;
+  el.textContent='取得中...'; el.style.opacity='.5';
+  try {
+    const r=await fetch(url);
+    if(!r.ok) throw new Error(`${r.status}`);
+    const blob=await r.blob();
+    const obj=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=obj; a.download=filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(obj),1000);
+  } catch(err){ toast('❌ ダウンロードに失敗しました','err'); }
+  finally { el.textContent=origText; el.style.opacity=''; }
 }
 
 async function handleUpload(event){
