@@ -521,10 +521,10 @@ const LS_TOKEN = 'mzjuku_token';
 function getToken(){ return localStorage.getItem(LS_TOKEN)||''; }
 function setToken(t){ if(t) localStorage.setItem(LS_TOKEN,t); }
 
-/* 管理者セッション管理 */
-function isAdmin(){ return !!sessionStorage.getItem('mzjuku_admin_ok'); }
+/* 管理者管理：パスワードがこの端末のlocalStorageにあれば管理者 */
+function isAdmin(){ return !!localStorage.getItem('mzjuku_admin'); }
 function hasPwd(){ return !!localStorage.getItem('mzjuku_admin'); }
-function checkPwd(pwd){ const s=localStorage.getItem('mzjuku_admin'); return !!s&&s===pwd; }
+function checkPwd(pwd){ const s=localStorage.getItem('mzjuku_admin'); return !!s&&s===pwd.trim(); }
 
 let _pendingAdminAction=null;
 function requireAdmin(callback){
@@ -536,9 +536,9 @@ function requireAdmin(callback){
   setTimeout(()=>document.getElementById('pwdModalInput').focus(),100);
 }
 function submitAdminPwd(){
-  const pwd=document.getElementById('pwdModalInput').value;
+  const pwd=document.getElementById('pwdModalInput').value.trim();
   if(checkPwd(pwd)){
-    sessionStorage.setItem('mzjuku_admin_ok','1');
+    localStorage.setItem('mzjuku_admin', pwd);
     closeModal('pwdModal');
     if(_pendingAdminAction){ _pendingAdminAction(); _pendingAdminAction=null; }
   } else {
@@ -778,7 +778,6 @@ function setAdminPwd(){
   const pwd=document.getElementById('adminPwdInput').value.trim();
   if(pwd.length<4){ toast('4文字以上のパスワードを入力してください','err'); return; }
   localStorage.setItem('mzjuku_admin',pwd);
-  sessionStorage.setItem('mzjuku_admin_ok','1');
   document.getElementById('adminPwdStatus').textContent='✅ 設定しました';
   document.getElementById('adminPwdStatus').style.color='#065f46';
   document.getElementById('adminPwdInput').value='';
@@ -798,21 +797,20 @@ function saveFirstSetup(){
   if(!token){ toast('GitHubトークンを入力してください','err'); return; }
   localStorage.setItem('mzjuku_admin',pwd);
   setToken(token);
-  sessionStorage.setItem('mzjuku_admin_ok','1');
   closeModal('setupModal');
   toast('✅ 管理者設定が完了しました','ok');
 }
 function adminLoginFromSetup(){
   const pwd=document.getElementById('setupLoginPwd').value;
   if(checkPwd(pwd)){
-    sessionStorage.setItem('mzjuku_admin_ok','1');
     openSetup();
   } else {
     document.getElementById('setupLoginStatus').textContent='❌ パスワードが違います';
   }
 }
 function adminLogout(){
-  sessionStorage.removeItem('mzjuku_admin_ok');
+  localStorage.removeItem('mzjuku_admin');
+  localStorage.removeItem(LS_TOKEN);
   openSetup();
   toast('ログアウトしました');
 }
