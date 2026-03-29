@@ -518,14 +518,20 @@ const LS_TOKEN = 'mzjuku_token';
 function getToken(){ return localStorage.getItem(LS_TOKEN)||''; }
 function setToken(t){ if(t) localStorage.setItem(LS_TOKEN,t); }
 
-/* 管理者管理：パスワードがこの端末のlocalStorageにあれば管理者 */
+/* 管理者管理
+   mzjuku_admin_cred = パスワード本体（永続。ログアウトしても残る）
+   mzjuku_admin      = セッションマーカー（ログイン中のみ存在） */
 function isAdmin(){ return !!localStorage.getItem('mzjuku_admin'); }
-function hasPwd(){ return !!localStorage.getItem('mzjuku_admin'); }
-function checkPwd(pwd){ const s=localStorage.getItem('mzjuku_admin'); return !!s&&s===pwd.trim(); }
+function hasPwd(){ return !!localStorage.getItem('mzjuku_admin_cred'); }
+function checkPwd(pwd){ const s=localStorage.getItem('mzjuku_admin_cred'); return !!s&&s===pwd.trim(); }
 
 let _pendingAdminAction=null;
 function requireAdmin(callback){
   if(isAdmin()){ callback(); return; }
+  if(!hasPwd()){
+    toast('⚙ 設定ボタンから管理者パスワードとトークンを設定してください','err');
+    return;
+  }
   _pendingAdminAction=callback;
   document.getElementById('pwdModalInput').value='';
   document.getElementById('pwdModalError').textContent='';
@@ -535,7 +541,7 @@ function requireAdmin(callback){
 function submitAdminPwd(){
   const pwd=document.getElementById('pwdModalInput').value.trim();
   if(checkPwd(pwd)){
-    localStorage.setItem('mzjuku_admin', pwd);
+    localStorage.setItem('mzjuku_admin','1');
     closeModal('pwdModal');
     if(_pendingAdminAction){ _pendingAdminAction(); _pendingAdminAction=null; }
   } else {
@@ -794,29 +800,33 @@ function saveFirstSetup(){
   const token=document.getElementById('cfgTokenFirst').value.trim();
   if(pwd.length<4){ toast('パスワードは4文字以上にしてください','err'); return; }
   if(!token){ toast('GitHubトークンを入力してください','err'); return; }
-  localStorage.setItem('mzjuku_admin',pwd);
+  localStorage.setItem('mzjuku_admin_cred',pwd);
+  localStorage.setItem('mzjuku_admin','1');
   setToken(token);
   closeModal('setupModal');
   toast('✅ 管理者設定が完了しました','ok');
+  if(_pendingAdminAction){ _pendingAdminAction(); _pendingAdminAction=null; }
 }
 function adminLoginFromSetup(){
   const pwd=document.getElementById('setupLoginPwd').value;
   if(checkPwd(pwd)){
+    localStorage.setItem('mzjuku_admin','1');
     openSetup();
+    if(_pendingAdminAction){ _pendingAdminAction(); _pendingAdminAction=null; }
   } else {
     document.getElementById('setupLoginStatus').textContent='❌ パスワードが違います';
   }
 }
 function adminLogout(){
   localStorage.removeItem('mzjuku_admin');
-  localStorage.removeItem(LS_TOKEN);
   openSetup();
   toast('ログアウトしました');
 }
 function changeAdminPwd(){
   const pwd=document.getElementById('adminPwdChangeInput').value.trim();
   if(pwd.length<4){ toast('4文字以上のパスワードを入力してください','err'); return; }
-  localStorage.setItem('mzjuku_admin',pwd);
+  localStorage.setItem('mzjuku_admin_cred',pwd);
+  localStorage.setItem('mzjuku_admin','1');
   document.getElementById('adminPwdChangeStatus').textContent='✅ 変更しました';
   document.getElementById('adminPwdChangeStatus').style.color='#065f46';
   document.getElementById('adminPwdChangeInput').value='';
@@ -969,6 +979,12 @@ async function reload(){
 }
 
 (async()=>{
+  // 旧バージョンからの移行：mzjuku_adminにパスワードが直接入っている場合はmzjuku_admin_credへ移行
+  const legacyAdmin = localStorage.getItem('mzjuku_admin');
+  if(legacyAdmin && legacyAdmin !== '1' && !localStorage.getItem('mzjuku_admin_cred')){
+    localStorage.setItem('mzjuku_admin_cred', legacyAdmin);
+    localStorage.setItem('mzjuku_admin', '1');
+  }
   document.getElementById('searchInput').value = '';
   await loadAll(); renderStats(); render();
 })();
