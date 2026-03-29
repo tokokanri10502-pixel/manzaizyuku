@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>萬財塾 記録システム</title>
+  <title>萬財塾ワークリスト</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a2744">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="萬財塾">
+  <meta name="apple-mobile-web-app-title" content="萬財塾ワークリスト">
   <link rel="apple-touch-icon" href="icon-192.png">
   <style>
     :root {
@@ -78,6 +78,8 @@
     .card-foot { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .cat-tag   { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
     .sp-tag    { font-size: 10px; background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+    .new-tag   { font-size: 10px; background: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 10px; font-weight: 800; letter-spacing: .05em; animation: newpulse 1.8s ease-in-out infinite; }
+    @keyframes newpulse { 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
     .memo-count-badge { margin-left: auto; font-size: 11px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; display: none; }
     .memo-count-badge.visible { display: inline-block; }
     /* メモボタン（カード下部） */
@@ -195,11 +197,10 @@
 
 <header>
   <div>
-    <div class="header-title"><img src="icon.png" class="header-logo" alt="萬財塾">萬財塾</div>
+    <div class="header-title"><img src="icon.png" class="header-logo" alt="萬財塾ワークリスト">萬財塾ワークリスト</div>
     <div class="header-meta">制作2部・営業 ｜ 隔週木曜 10:00〜10:30 ｜ 4階食堂<br>メンバー：竹野・大野・北角・中田・永田・地畠・山村</div>
   </div>
   <div class="header-right">
-    <span class="connected-badge" id="connectedBadge">● GitHub 接続中</span>
     <button class="btn btn-ai"      onclick="openAI()">🤖 次回テーマをAIに提案</button>
     <button class="btn btn-ghost"   onclick="openAdd()">＋ 新規追加</button>
     <button class="btn btn-setting" onclick="openSetup()">⚙ 設定</button>
@@ -340,49 +341,22 @@
 
 <!-- 設定モーダル -->
 <div class="overlay hidden" id="setupModal">
-  <div class="modal" style="max-width:580px">
-    <div class="modal-title">⚙ GitHub 接続設定</div>
-    <div class="setup-step">
-      <div class="step-num">1</div>
-      <div class="step-body"><p>GitHubでリポジトリを作成（初回のみ）</p><span><a href="https://github.com/new" target="_blank">github.com/new</a> → 名前: <strong>manzai-juku</strong> → <strong>Public</strong>で作成</span></div>
-    </div>
-    <div class="setup-step">
-      <div class="step-num">2</div>
-      <div class="step-body"><p>Personal Access Token を発行</p><span><a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>Token name: 萬財塾 ／ Expiration: 1 year ／ スコープ: <strong>public_repo</strong> → Generate token</span></div>
-    </div>
-    <div class="setup-step">
-      <div class="step-num">3</div>
-      <div class="step-body"><p>メンバーへの共有</p><span>ユーザー名・リポジトリ名・トークンの3点をメンバーに共有。各自で設定するとメモ・添付が使えます。</span></div>
-    </div>
-    <div class="form-section-title">接続情報</div>
-    <div class="form-2col">
-      <div class="form-row">
-        <label class="form-label">GitHubユーザー名 *</label>
-        <input type="text" class="form-input" id="cfgOwner" placeholder="例: tokokanri10502">
-      </div>
-      <div class="form-row">
-        <label class="form-label">リポジトリ名 *</label>
-        <input type="text" class="form-input" id="cfgRepo" placeholder="例: manzai-juku">
-      </div>
-    </div>
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">⚙ 設定</div>
+    <div class="form-section-title">管理者パスワード（セッション編集・追加機能）</div>
     <div class="form-row">
-      <label class="form-label">Personal Access Token *</label>
-      <input type="password" class="form-input" id="cfgToken" placeholder="ghp_xxxxxxxxxxxx">
-      <div class="form-hint">トークンはこのブラウザのみに保存。GitHub APIとの通信にのみ使用されます。</div>
-    </div>
-    <div class="form-section-title">管理者設定（セッション編集機能）</div>
-    <div class="form-row">
-      <label class="form-label">管理者パスワード</label>
+      <label class="form-label">新しいパスワード</label>
       <div style="display:flex;gap:8px">
         <input type="password" class="form-input" id="adminPwdInput" placeholder="4文字以上で設定">
         <button class="btn btn-primary btn-sm" onclick="setAdminPwd()" style="white-space:nowrap">設定</button>
       </div>
       <div class="form-hint" id="adminPwdStatus"></div>
     </div>
+    <div class="form-section-title">データ管理</div>
+    <div class="form-hint" style="margin-bottom:8px">セッションデータ・メモはこのブラウザのみに保存されます。</div>
     <div class="modal-actions">
-      <button class="btn btn-cancel" onclick="closeModal('setupModal')">キャンセル</button>
-      <button class="btn btn-danger" onclick="clearConfig()" style="margin-right:auto">設定を削除</button>
-      <button class="btn btn-primary" id="setupSaveBtn" onclick="saveSetup()">接続して保存</button>
+      <button class="btn btn-cancel" onclick="closeModal('setupModal')">閉じる</button>
+      <button class="btn btn-danger" onclick="clearAllData()" style="margin-right:auto">全データを削除</button>
     </div>
   </div>
 </div>
@@ -481,55 +455,24 @@ const CAT = {
   "思考・フレームワーク": { bg:"#fef9c3", color:"#713f12", border:"#eab308" },
 };
 
-const GH = 'https://api.github.com';
-const CFG_KEY = 'mzjuku_cfg';
-function getCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||'{}'); }catch(e){ return {}; } }
-function setCfg(c){ localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
-function ghH(t){ return { Authorization:`token ${t}`, Accept:'application/vnd.github.v3+json', 'Content-Type':'application/json' }; }
-
-async function ghGet(owner, repo, path, token){
-  const r = await fetch(`${GH}/repos/${owner}/${repo}/contents/${path}`, { headers: ghH(token) });
-  if(r.status===404) return null;
-  if(!r.ok) throw new Error(`GitHub APIエラー: ${r.status}`);
-  return r.json();
-}
-async function ghPut(owner, repo, path, content, sha, message, token, isRaw){
-  const encoded = isRaw ? content : btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-  const body = { message, content: encoded };
-  if(sha) body.sha = sha;
-  const r = await fetch(`${GH}/repos/${owner}/${repo}/contents/${path}`, { method:'PUT', headers:ghH(token), body:JSON.stringify(body) });
-  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.message||`書き込みエラー: ${r.status}`); }
-  return r.json();
-}
-function b64json(s){ return JSON.parse(decodeURIComponent(escape(atob(s.replace(/\n/g,''))))); }
+const LS_DATA = 'mzjuku_data';
+const LS_SESSIONS = 'mzjuku_sessions';
 
 let extra=[], sessionData={}, ALL=[...BASE], currentFilter='all', currentWeek=null;
 
 function isAdmin(){ return !!localStorage.getItem('mzjuku_admin'); }
 
-async function loadAll(){
-  const cfg=getCfg();
-  if(!cfg.owner||!cfg.repo||!cfg.token) return;
-  const [sf,df]=await Promise.all([
-    ghGet(cfg.owner,cfg.repo,'sessions.json',cfg.token).catch(()=>null),
-    ghGet(cfg.owner,cfg.repo,'session_data.json',cfg.token).catch(()=>null),
-  ]);
-  if(sf){ try{ extra=b64json(sf.content); }catch(e){} }
-  if(df){ try{ sessionData=b64json(df.content); }catch(e){} }
+function loadAll(){
+  try{ extra=JSON.parse(localStorage.getItem(LS_SESSIONS)||'[]'); }catch(e){ extra=[]; }
+  try{ sessionData=JSON.parse(localStorage.getItem(LS_DATA)||'{}'); }catch(e){ sessionData={}; }
   const ov=sessionData.overrides||{};
   ALL=[...BASE.map(s=>{ const o=ov[`week_${s.week}`]; return o?{...s,...o}:s; }), ...extra];
 }
-async function saveSessionData(){
-  const cfg=getCfg();
-  if(!cfg.owner||!cfg.repo||!cfg.token) throw new Error('GitHub未設定です。⚙ 設定から接続してください');
-  const f=await ghGet(cfg.owner,cfg.repo,'session_data.json',cfg.token);
-  await ghPut(cfg.owner,cfg.repo,'session_data.json',sessionData,f?f.sha:null,'萬財塾 メモ更新',cfg.token);
+function saveSessionData(){
+  localStorage.setItem(LS_DATA, JSON.stringify(sessionData));
 }
-async function saveSessions(){
-  const cfg=getCfg();
-  if(!cfg.owner||!cfg.repo||!cfg.token) throw new Error('GitHub未設定');
-  const f=await ghGet(cfg.owner,cfg.repo,'sessions.json',cfg.token);
-  await ghPut(cfg.owner,cfg.repo,'sessions.json',extra,f?f.sha:null,'萬財塾 セッション更新',cfg.token);
+function saveSessions(){
+  localStorage.setItem(LS_SESSIONS, JSON.stringify(extra));
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -560,9 +503,10 @@ function render(){
   g.innerHTML=list.map(s=>{
     const st=CAT[s.cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
     const mc=memoCount(s.week);
+    const isNew=s.createdAt&&(Date.now()-s.createdAt<48*60*60*1000);
     return `<div class="session-card" style="border-left-color:${st.border}">
   <div class="card-body" onclick="openDetail(${s.week})">
-    <div class="card-top"><span class="week-badge">第 ${s.week} 回</span><span class="date-text">${esc(s.date)}</span></div>
+    <div class="card-top"><span class="week-badge">第 ${s.week} 回</span><span class="date-text">${esc(s.date)}</span>${isNew?'<span class="new-tag">★ NEW</span>':''}</div>
     <div class="theme-title">${esc(s.theme)}</div>
     <div class="card-foot">
       <span class="cat-tag" style="background:${st.bg};color:${st.color}">${esc(s.cat)}</span>
@@ -632,7 +576,7 @@ async function submitQuickMemo(){
   const ts=`${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   sessionData[key].memos.push({author,text,time:ts});
   try {
-    await saveSessionData();
+    saveSessionData();
     document.getElementById('qmText').value='';
     renderQuickMemos(currentWeek);
     render();
@@ -688,23 +632,17 @@ function renderAttachments(week){
 
 async function handleUpload(event){
   const file=event.target.files[0]; if(!file) return;
-  if(file.size>24*1024*1024){ toast('❌ 24MB以内のファイルにしてください','err'); return; }
-  const cfg=getCfg();
-  if(!cfg.owner||!cfg.repo||!cfg.token){ toast('❌ GitHubが未設定です','err'); return; }
+  if(file.size>2*1024*1024){ toast('❌ 2MB以内のファイルにしてください','err'); return; }
   const prog=document.getElementById('uploadProg');
-  prog.style.display='block'; prog.textContent=`「${file.name}」をアップロード中...`;
+  prog.style.display='block'; prog.textContent=`「${file.name}」を保存中...`;
   try {
-    const b64=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); });
-    const path=`attachments/week_${currentWeek}/${file.name}`;
-    const ex=await ghGet(cfg.owner,cfg.repo,path,cfg.token);
-    await ghPut(cfg.owner,cfg.repo,path,b64,ex?ex.sha:null,`添付: ${file.name}`,cfg.token,true);
-    const rawUrl=`https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/main/${path}`;
+    const dataUrl=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
     const key=`week_${currentWeek}`;
     if(!sessionData[key]) sessionData[key]={memos:[],attachments:[]};
     sessionData[key].attachments=(sessionData[key].attachments||[]).filter(a=>a.name!==file.name);
-    sessionData[key].attachments.push({name:file.name,url:rawUrl});
-    await saveSessionData(); renderAttachments(currentWeek); toast(`✅「${file.name}」を添付しました`,'ok');
-  } catch(e){ toast(`❌ アップロード失敗: ${e.message}`,'err'); }
+    sessionData[key].attachments.push({name:file.name,url:dataUrl});
+    saveSessionData(); renderAttachments(currentWeek); toast(`✅「${file.name}」を添付しました`,'ok');
+  } catch(e){ toast(`❌ 保存失敗: ${e.message}`,'err'); }
   finally { prog.style.display='none'; event.target.value=''; }
 }
 
@@ -755,11 +693,11 @@ async function saveEdit(){
     if(isBase){
       if(!sessionData.overrides) sessionData.overrides={};
       sessionData.overrides[`week_${currentWeek}`]={date,theme,points,cat,note,sp};
-      await saveSessionData();
+      saveSessionData();
     } else {
       const idx=extra.findIndex(e=>e.week===currentWeek);
       if(idx>=0) extra[idx]={...extra[idx],date,theme,points,cat,note,sp};
-      await saveSessions();
+      saveSessions();
     }
     const ai=ALL.findIndex(x=>x.week===currentWeek);
     if(ai>=0) ALL[ai]={...ALL[ai],date,theme,points,cat,note,sp};
@@ -779,42 +717,19 @@ async function saveEdit(){
 
 /* 設定 */
 function openSetup(){
-  const cfg=getCfg();
-  document.getElementById('cfgOwner').value=cfg.owner||'';
-  document.getElementById('cfgRepo').value =cfg.repo||'';
-  document.getElementById('cfgToken').value=cfg.token||'';
   document.getElementById('adminPwdInput').value='';
   const has=!!localStorage.getItem('mzjuku_admin');
-  document.getElementById('adminPwdStatus').textContent=has?'✅ 管理者パスワード設定済み。編集機能が有効です。':'未設定（設定すると萬財塾のみ編集ボタンが使えます）';
+  document.getElementById('adminPwdStatus').textContent=has?'✅ 管理者パスワード設定済み。編集機能が有効です。':'未設定（設定すると編集ボタンが使えます）';
   document.getElementById('adminPwdStatus').style.color=has?'#065f46':'';
   openModal('setupModal');
 }
-async function saveSetup(){
-  const owner=document.getElementById('cfgOwner').value.trim();
-  const repo =document.getElementById('cfgRepo').value.trim();
-  const token=document.getElementById('cfgToken').value.trim();
-  if(!owner||!repo||!token){ toast('すべての項目を入力してください','err'); return; }
-  const btn=document.getElementById('setupSaveBtn');
-  btn.disabled=true; btn.textContent='確認中...';
-  try {
-    const r=await fetch(`${GH}/repos/${owner}/${repo}`,{headers:ghH(token)});
-    if(r.status===404) throw new Error('リポジトリが見つかりません');
-    if(r.status===401) throw new Error('トークンが無効です');
-    if(!r.ok) throw new Error(`エラー: ${r.status}`);
-    setCfg({owner,repo,token});
-    closeModal('setupModal');
-    document.getElementById('connectedBadge').style.display='inline-flex';
-    toast('✅ GitHubに接続しました','ok');
-    await reload();
-  } catch(e){ toast(`❌ ${e.message}`,'err'); }
-  finally { btn.disabled=false; btn.textContent='接続して保存'; }
-}
-function clearConfig(){
-  if(!confirm('GitHub接続設定を削除しますか？')) return;
-  localStorage.removeItem(CFG_KEY);
+function clearAllData(){
+  if(!confirm('すべてのデータ（追加セッション・メモ・添付）を削除しますか？\nこの操作は元に戻せません。')) return;
+  localStorage.removeItem(LS_DATA);
+  localStorage.removeItem(LS_SESSIONS);
+  localStorage.removeItem('mzjuku_admin');
   extra=[]; sessionData={}; ALL=[...BASE];
-  document.getElementById('connectedBadge').style.display='none';
-  renderStats(); render(); closeModal('setupModal'); toast('設定を削除しました');
+  renderStats(); render(); closeModal('setupModal'); toast('全データを削除しました');
 }
 
 /* 追加 */
@@ -836,10 +751,10 @@ async function addSession(){
   if(!week||!raw||!theme){ toast('回数・開催日・テーマは必須です','err'); return; }
   const d=new Date(raw);
   const date=`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-  const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代')};
+  const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代'),createdAt:Date.now()};
   const btn=document.getElementById('addBtn');
   btn.disabled=true; btn.textContent='保存中...';
-  try { extra.push(item); await saveSessions(); ALL=[...BASE,...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
+  try { extra.push(item); saveSessions(); ALL=[...BASE,...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
   catch(e){ extra.pop(); toast(`❌ ${e.message}`,'err'); }
   finally { btn.disabled=false; btn.textContent='追加する'; }
 }
@@ -866,17 +781,12 @@ function copyPrompt(){
 let _tt;
 function toast(msg,type=''){ const el=document.getElementById('toast'); el.textContent=msg; el.className=`toast ${type}`; clearTimeout(_tt); _tt=setTimeout(()=>el.classList.add('hidden'),3400); }
 
-async function reload(){
-  document.getElementById('sessionsGrid').innerHTML=`<div class="loading" style="grid-column:1/-1"><div class="spin"></div>GitHubから読み込み中...</div>`;
-  try{ await loadAll(); }catch(e){ toast(`読み込みエラー: ${e.message}`,'err'); }
+function reload(){
+  loadAll();
   renderStats(); render();
 }
 
-(async()=>{
-  const cfg=getCfg();
-  if(cfg.owner&&cfg.token){ document.getElementById('connectedBadge').style.display='inline-flex'; await reload(); }
-  else { ALL=[...BASE]; renderStats(); render(); }
-})();
+loadAll(); renderStats(); render();
 
 if('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

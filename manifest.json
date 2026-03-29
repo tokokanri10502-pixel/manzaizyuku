@@ -1,7 +1,7 @@
 {
-  "name": "萬財塾",
+  "name": "萬財塾ワークリスト",
   "short_name": "萬財塾",
-  "description": "萬財塾 記録システム",
+  "description": "萬財塾ワークリスト",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f0f4f8",
