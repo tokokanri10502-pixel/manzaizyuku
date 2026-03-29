@@ -1,9 +1,10 @@
-const CACHE_NAME = 'manzai-juku-v1';
+const CACHE_NAME = 'manzai-juku-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icon.png'
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // インストール時にアセットをキャッシュ
