@@ -213,7 +213,7 @@
 
 <div class="controls">
   <div class="search-wrap">
-    <input type="text" class="search-input" id="searchInput" placeholder="テーマ・内容を検索..." oninput="render()" autocomplete="new-password" name="search_mzjuku">
+    <input type="text" class="search-input" id="searchInput" placeholder="テーマ・内容を検索..." oninput="render()" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" name="search_mzjuku">
   </div>
   <div class="filters">
     <button class="filter-btn active" onclick="setFilter('all',this)">すべて</button>
@@ -971,8 +971,10 @@ async function reload(){
   renderStats(); render();
 }
 
-document.getElementById('searchInput').value = '';
-(async()=>{ await loadAll(); renderStats(); render(); })();
+(async()=>{
+  document.getElementById('searchInput').value = '';
+  await loadAll(); renderStats(); render();
+})();
 
 if('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
