@@ -79,6 +79,7 @@
     .cat-tag   { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
     .sp-tag    { font-size: 10px; background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
     .new-tag   { font-size: 10px; background: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 10px; font-weight: 800; letter-spacing: .05em; animation: newpulse 1.8s ease-in-out infinite; }
+    .attach-tag { font-size: 10px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
     @keyframes newpulse { 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
     .memo-count-badge { margin-left: auto; font-size: 11px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; display: none; }
     .memo-count-badge.visible { display: inline-block; }
@@ -592,6 +593,7 @@ async function saveSessions(){
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function memoCount(w){ const d=sessionData[`week_${w}`]; return d?(d.memos||[]).length:0; }
+function attachCount(w){ const d=sessionData[`week_${w}`]; return d?(d.attachments||[]).length:0; }
 
 function renderStats(){
   const cc={};
@@ -618,6 +620,7 @@ function render(){
   g.innerHTML=list.map(s=>{
     const st=CAT[s.cat]||{bg:'#f1f5f9',color:'#475569',border:'#94a3b8'};
     const mc=memoCount(s.week);
+    const ac=attachCount(s.week);
     const isNew=s.createdAt&&(Date.now()-s.createdAt<48*60*60*1000);
     return `<div class="session-card" style="border-left-color:${st.border}">
   <div class="card-body" onclick="openDetail(${s.week})">
@@ -626,6 +629,7 @@ function render(){
     <div class="card-foot">
       <span class="cat-tag" style="background:${st.bg};color:${st.color}">${esc(s.cat)}</span>
       ${s.sp?'<span class="sp-tag">🔹 次世代リーダーMTG</span>':''}
+      ${ac?`<span class="attach-tag">📎 ${ac}件の資料</span>`:''}
     </div>
   </div>
   <button class="card-memo-btn" onclick="openQuickMemo(${s.week})">
