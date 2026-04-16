@@ -574,16 +574,38 @@ async function ghWriteFile(filename, content, message){
 
 let extra=[], sessionData={}, ALL=[...BASE], currentFilter='all', currentWeek=null;
 
+const LS_EXTRA = 'mzjuku_local_sessions';
+
+/* localStorage からローカル追加セッションを読む */
+function lsLoadExtra(){
+  try{ return JSON.parse(localStorage.getItem(LS_EXTRA)||'[]'); }catch(e){ return []; }
+}
+/* localStorage へ保存（即時反映用） */
+function lsSaveExtra(arr){
+  localStorage.setItem(LS_EXTRA, JSON.stringify(arr));
+}
+
 async function loadAll(){
+  /* ローカル保存分を先に読み込んで即時表示 */
+  const local = lsLoadExtra();
   try{
     const [sf,df]=await Promise.all([
       ghReadRaw('sessions.json').catch(()=>null),
       ghReadRaw('session_data.json').catch(()=>null),
     ]);
-    extra=sf||[]; sessionData=df||{};
+    const ghExtra = sf||[];
+    /* GitHub にある週番号のセットを作り、ローカルのみの分をマージ */
+    const ghWeeks = new Set(ghExtra.map(s=>s.week));
+    const localOnly = local.filter(s=>!ghWeeks.has(s.week));
+    extra = [...ghExtra, ...localOnly];
+    /* GitHub と同期済みなのでローカルキャッシュも更新 */
+    lsSaveExtra(extra);
+    sessionData=df||{};
     document.getElementById('connectedBadge').style.display='inline-flex';
   } catch(e){
-    extra=[]; sessionData={};
+    /* オフライン時はローカル保存分だけで動作 */
+    extra = local;
+    sessionData={};
   }
   const ov=sessionData.overrides||{};
   ALL=[...BASE.map(s=>{ const o=ov[`week_${s.week}`]; return o?{...s,...o}:s; }), ...extra];
@@ -592,7 +614,12 @@ async function saveSessionData(){
   await ghWriteFile('session_data.json',sessionData,'萬財塾 メモ更新');
 }
 async function saveSessions(){
-  await ghWriteFile('sessions.json',extra,'萬財塾 セッション更新');
+  /* localStorage に即時保存（トークン不要） */
+  lsSaveExtra(extra);
+  /* GitHub にも保存（トークンがあれば）。失敗しても localStorage 分は残る */
+  if(getToken()){
+    await ghWriteFile('sessions.json',extra,'萬財塾 セッション更新');
+  }
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -941,13 +968,12 @@ function openSetup(){
 
 /* 追加 */
 function openAdd(){
-  requireAdmin(()=>{
-    const nw=Math.max(...ALL.map(s=>s.week))+1;
-    document.getElementById('newWeek').value=nw;
-    document.getElementById('newDate').value=nextThursday();
-    ['newTheme','newPoints','newNote'].forEach(id=>document.getElementById(id).value='');
-    openModal('addModal');
-  });
+  const nw=Math.max(...ALL.map(s=>s.week))+1;
+  document.getElementById('newWeek').value=nw;
+  document.getElementById('newDate').value=nextThursday();
+  ['newTheme','newPoints','newNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newCat').value='AI・デジタル';
+  openModal('addModal');
 }
 function nextThursday(){ const d=new Date(); const diff=(4-d.getDay()+7)%7||14; d.setDate(d.getDate()+diff); return d.toISOString().split('T')[0]; }
 async function addSession(){
@@ -963,8 +989,23 @@ async function addSession(){
   const item={week,date,theme,points:pts,cat,note,sp:note.includes('次世代'),createdAt:Date.now()};
   const btn=document.getElementById('addBtn');
   btn.disabled=true; btn.textContent='保存中...';
-  try { extra.push(item); await saveSessions(); const ov2=sessionData.overrides||{}; ALL=[...BASE.map(s=>{const o=ov2[`week_${s.week}`];return o?{...s,...o}:s;}),...extra]; closeModal('addModal'); renderStats(); render(); toast(`✅ 第${week}回「${theme}」を追加しました`,'ok'); }
-  catch(e){ extra.pop(); toast(`❌ ${e.message}`,'err'); }
+  try {
+    extra.push(item);
+    const ov2=sessionData.overrides||{};
+    ALL=[...BASE.map(s=>{const o=ov2[`week_${s.week}`];return o?{...s,...o}:s;}),...extra];
+    closeModal('addModal'); renderStats(); render();
+    /* まず即時保存（localStorage）→ GitHub同期はバックグラウンドで */
+    lsSaveExtra(extra);
+    toast(`✅ 第${week}回「${theme}」を追加しました`,'ok');
+    if(getToken()){
+      ghWriteFile('sessions.json',extra,'萬財塾 セッション更新')
+        .then(()=>toast('☁️ GitHubにも保存しました','ok'))
+        .catch(e=>toast(`⚠️ ローカル保存済み（GitHub同期失敗: ${e.message}）`,'err'));
+    } else {
+      toast(`✅ 第${week}回を追加しました（GitHubトークン未設定のためローカル保存）`,'ok');
+    }
+  }
+  catch(e){ extra.pop(); lsSaveExtra(extra); toast(`❌ ${e.message}`,'err'); }
   finally { btn.disabled=false; btn.textContent='追加する'; }
 }
 
