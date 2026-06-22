@@ -550,11 +550,20 @@ function submitAdminPwd(){
   }
 }
 
-/* GitHub 読み取り（認証不要・公開リポジトリ） */
+/* GitHub 読み取り（認証不要・公開リポジトリ）。
+   オフライン/応答なしでも固まらないよう8秒でタイムアウトし null を返す */
 async function ghReadRaw(filename){
-  const r=await fetch(`${GH_RAW}/${filename}?_=${Date.now()}`);
-  if(!r.ok) return null;
-  return r.json();
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),8000);
+  try{
+    const r=await fetch(`${GH_RAW}/${filename}?_=${Date.now()}`,{signal:ac.signal});
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){
+    return null;  /* ネットワークエラー・タイムアウト時はローカルにフォールバック */
+  }finally{
+    clearTimeout(timer);
+  }
 }
 
 /* GitHub 書き込み（トークン必要） */
